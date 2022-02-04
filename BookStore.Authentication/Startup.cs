@@ -4,6 +4,7 @@ using IdentityServer4.EntityFramework.Mappers;
 using IdentityServer4.Test;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -39,7 +40,7 @@ namespace BookStore.Authentication
             {
                 options.ConfigureDbContext = b => b.UseSqlServer(Configuration["ConnectionStrings:Authentication"],
                     sql => sql.MigrationsAssembly(migrationsAssembly));
-            });
+            }).AddDeveloperSigningCredential();
             services.AddControllers();
             
         }
@@ -99,6 +100,7 @@ namespace BookStore.Authentication
                 app.UseDeveloperExceptionPage();
             }
             InitializeDatabase(app);
+            app.UseIdentityServer();
             app.UseHttpsRedirection();
 
             app.UseRouting();
@@ -108,6 +110,10 @@ namespace BookStore.Authentication
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
+                endpoints.MapGet("/", async context =>
+                {
+                    await context.Response.WriteAsync("Hello World!");
+                });
             });
         }
     }
