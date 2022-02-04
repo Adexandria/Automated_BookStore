@@ -1,3 +1,6 @@
+using BookStore.Authentication.In_Memory_Repo;
+using IdentityServer4.EntityFramework.DbContexts;
+using IdentityServer4.EntityFramework.Mappers;
 using IdentityServer4.Test;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -29,7 +32,7 @@ namespace BookStore.Authentication
         public void ConfigureServices(IServiceCollection services)
         {
             var migrationsAssembly = typeof(Startup).GetTypeInfo().Assembly.GetName().Name;
-            services.AddIdentityServer().AddConfigurationStore(option =>
+            services.AddIdentityServer().AddTestUsers(IdentityConfiguration.TestUsers).AddConfigurationStore(option =>
             {
                 option.ConfigureDbContext = b => b.UseSqlServer(Configuration["ConnectionStrings:Authentication"], sql => sql.MigrationsAssembly(migrationsAssembly));
             }).AddOperationalStore(options =>
@@ -38,8 +41,56 @@ namespace BookStore.Authentication
                     sql => sql.MigrationsAssembly(migrationsAssembly));
             });
             services.AddControllers();
+            
         }
 
+        private void InitializeDatabase(IApplicationBuilder app)
+        {
+            using (var serviceScope = app.ApplicationServices.GetService<IServiceScopeFactory>().CreateScope())
+            {
+                serviceScope.ServiceProvider.GetRequiredService<PersistedGrantDbContext>().Database.Migrate();
+
+                var context = serviceScope.ServiceProvider.GetRequiredService<ConfigurationDbContext>();
+                context.Database.Migrate();
+                if (!context.Clients.Any())
+                {
+                    foreach (var client in IdentityConfiguration.Clients)
+                    {
+                        context.Clients.Add(client.ToEntity());
+                    }
+                    context.SaveChanges();
+                }
+
+                if (!context.IdentityResources.Any())
+                {
+                    foreach (var resource in IdentityConfiguration.IdentityResources)
+                    {
+                        context.IdentityResources.Add(resource.ToEntity());
+                    }
+                    context.SaveChanges();
+                }
+
+                if (!context.ApiResources.Any())
+                {
+                    foreach (var resource in IdentityConfiguration.ApiResources)
+                    {
+
+                        context.ApiResources.Add(resource.ToEntity());
+                    }
+                    context.SaveChanges();
+                }
+                if (!context.ApiScopes.Any())
+                {
+                    foreach (var resource in IdentityConfiguration.ApiScopes)
+                    {
+
+                        context.ApiScopes.Add(resource.ToEntity());
+                    }
+                    context.SaveChanges();
+                }
+                
+            }
+        }
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
@@ -47,7 +98,7 @@ namespace BookStore.Authentication
             {
                 app.UseDeveloperExceptionPage();
             }
-
+            InitializeDatabase(app);
             app.UseHttpsRedirection();
 
             app.UseRouting();
