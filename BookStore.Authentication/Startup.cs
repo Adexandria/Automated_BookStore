@@ -31,10 +31,10 @@ namespace BookStore.Authentication
             var migrationsAssembly = typeof(Startup).GetTypeInfo().Assembly.GetName().Name;
             services.AddIdentityServer().AddConfigurationStore(option =>
             {
-                option.ConfigureDbContext = b => b.UseSqlServer(Configuration["Authentication"], sql => sql.MigrationsAssembly(migrationsAssembly));
+                option.ConfigureDbContext = b => b.UseSqlServer(Configuration["ConnectionStrings:Authentication"], sql => sql.MigrationsAssembly(migrationsAssembly));
             }).AddOperationalStore(options =>
             {
-                options.ConfigureDbContext = b => b.UseSqlServer(Configuration["Authentication"],
+                options.ConfigureDbContext = b => b.UseSqlServer(Configuration["ConnectionStrings:Authentication"],
                     sql => sql.MigrationsAssembly(migrationsAssembly));
             });
             services.AddControllers();
