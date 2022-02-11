@@ -1,3 +1,5 @@
+using Authentication.Domain.Entities;
+using Authentication.Infrastructure.Service;
 using BookStore.Authentication.In_Memory_Repo;
 using IdentityServer4.EntityFramework.DbContexts;
 using IdentityServer4.EntityFramework.Mappers;
@@ -6,6 +8,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpsPolicy;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -33,7 +36,12 @@ namespace BookStore.Authentication
         public void ConfigureServices(IServiceCollection services)
         {
             var migrationsAssembly = typeof(Startup).GetTypeInfo().Assembly.GetName().Name;
-            services.AddIdentityServer().AddTestUsers(IdentityConfiguration.TestUsers).AddConfigurationStore(option =>
+
+            services.AddDbContext<AuthDbService>(s => {
+                s.UseSqlServer(Configuration["ConnectionStrings:Authentication"],s=> s.MigrationsAssembly(migrationsAssembly)).EnableSensitiveDataLogging();
+            });
+            services.AddIdentity<SignUp, IdentityRole>().AddEntityFrameworkStores<AuthDbService>().AddDefaultTokenProviders();
+            services.AddIdentityServer().AddAspNetIdentity<SignUp>().AddConfigurationStore(option =>
             {
                 option.ConfigureDbContext = b => b.UseSqlServer(Configuration["ConnectionStrings:Authentication"], sql => sql.MigrationsAssembly(migrationsAssembly));
             }).AddOperationalStore(options =>
@@ -100,10 +108,11 @@ namespace BookStore.Authentication
                 app.UseDeveloperExceptionPage();
             }
             InitializeDatabase(app);
-            app.UseIdentityServer();
+          
             app.UseHttpsRedirection();
 
             app.UseRouting();
+            app.UseAuthentication();
 
             app.UseAuthorization();
 
@@ -115,6 +124,7 @@ namespace BookStore.Authentication
                     await context.Response.WriteAsync("Hello World!");
                 });
             });
+            app.UseIdentityServer();
         }
     }
 }
