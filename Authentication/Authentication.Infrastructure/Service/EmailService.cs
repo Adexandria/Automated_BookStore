@@ -8,18 +8,24 @@ using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using RestSharp;
 using RestSharp.Authenticators;
+using Microsoft.Extensions.Configuration;
 
 namespace Authentication.Infrastructure.Service
 {
     public class EmailService
     {
+		private IConfiguration config;
+        public EmailService(IConfiguration config)
+        {
+			this.config = config;
+        }
 		public async Task<bool> SendSimpleMessage(Mail newMail)
 		{
             try
             {
                 RestClient client = new RestClient("https://api.mailgun.net/v3")
                 {
-                    Authenticator = new HttpBasicAuthenticator("api", "f2bb647f002947dfe20bae6e655a2f73-d2cc48bc-70d8f34a")
+                    Authenticator = new HttpBasicAuthenticator("api", config["APIKey"])
                 };
                 RestRequest request = new RestRequest();
 				request.AddParameter("domain", "paprika.software", ParameterType.UrlSegment);
