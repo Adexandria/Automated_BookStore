@@ -3,9 +3,11 @@ using Authentication.Domain.Entities;
 using Authentication.Infrastructure.Repository;
 using Authentication.Infrastructure.Service;
 using BookStore.Authentication.In_Memory_Repo;
+using IdentityServer4;
 using IdentityServer4.EntityFramework.DbContexts;
 using IdentityServer4.EntityFramework.Mappers;
 using IdentityServer4.Test;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -19,11 +21,13 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace BookStore.Authentication
@@ -41,6 +45,33 @@ namespace BookStore.Authentication
         public void ConfigureServices(IServiceCollection services)
         {
             var migrationsAssembly = typeof(Startup).GetTypeInfo().Assembly.GetName().Name;
+            var jwtSettings = Configuration.GetSection("JwtSettings");
+
+            services.AddScoped<IFaculty, FacultyRepository>();
+            services.AddScoped<EmailService>();
+            services.AddControllers();
+            services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+            services.AddScoped<Credentials>();
+
+            services.AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+            }).AddJwtBearer(options =>
+            {
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuer = false,
+                    ValidateAudience = false,
+                    ValidateLifetime = true,
+                    ValidateIssuerSigningKey = true,
+                    ValidIssuer = jwtSettings.GetSection("validIssuer").Value,
+                    ValidAudience = jwtSettings.GetSection("validAudience").Value,
+                    AuthenticationType = "Bearer",
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.GetSection("securityKey").Value))
+                };
+            });
             services.AddApiVersioning(config =>
             {
                 config.DefaultApiVersion = new ApiVersion(1, 0);
@@ -59,16 +90,10 @@ namespace BookStore.Authentication
                 s.UseSqlServer(Configuration["ConnectionStrings:Authentication"],s=> s.MigrationsAssembly(migrationsAssembly)).EnableSensitiveDataLogging();
             });
             services.AddIdentity<SignUp, IdentityRole>().AddEntityFrameworkStores<AuthDbService>().AddDefaultTokenProviders();
-            services.AddIdentityServer().AddAspNetIdentity<SignUp>().AddConfigurationStore(option =>
-            {
-                option.ConfigureDbContext = b => b.UseSqlServer(Configuration["ConnectionStrings:Authentication"], sql => sql.MigrationsAssembly(migrationsAssembly));
-            }).AddOperationalStore(options =>
-            {
-                options.ConfigureDbContext = b => b.UseSqlServer(Configuration["ConnectionStrings:Authentication"],
-                    sql => sql.MigrationsAssembly(migrationsAssembly));
-            }).AddDeveloperSigningCredential();
-            services.AddScoped<IFaculty, FacultyRepository>();
-            services.AddScoped<EmailService>();
+            
+            
+
+
             services.Configure<IdentityOptions>(options =>
             {
                 // Default Password settings.
@@ -81,6 +106,16 @@ namespace BookStore.Authentication
                 options.Password.RequireLowercase = false;
                 options.Password.RequireUppercase = false;
             });
+            services.ConfigureApplicationCookie(options =>
+            {
+                // Cookie settings
+                options.Cookie.HttpOnly = true;
+                options.LoginPath = PathString.Empty;
+                options.AccessDeniedPath = PathString.Empty;
+
+            });
+
+
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo()
@@ -125,67 +160,10 @@ namespace BookStore.Authentication
 
                 });
             });
-            services.ConfigureApplicationCookie(options =>
-            {
-                // Cookie settings
-                options.Cookie.HttpOnly = true;
-                options.Cookie.Name = "DownloadMusic";
-                options.ExpireTimeSpan = new TimeSpan(1, 0, 0, 0);
-                options.LoginPath = PathString.Empty;
-                options.AccessDeniedPath = PathString.Empty;
-
-            });
-            services.AddControllers();
-            services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+            
         }
 
-        private void InitializeDatabase(IApplicationBuilder app)
-        {
-            using (var serviceScope = app.ApplicationServices.GetService<IServiceScopeFactory>().CreateScope())
-            {
-                serviceScope.ServiceProvider.GetRequiredService<PersistedGrantDbContext>().Database.Migrate();
-
-                var context = serviceScope.ServiceProvider.GetRequiredService<ConfigurationDbContext>();
-                context.Database.Migrate();
-                if (!context.Clients.Any())
-                {
-                    foreach (var client in IdentityConfiguration.Clients)
-                    {
-                        context.Clients.Add(client.ToEntity());
-                    }
-                    context.SaveChanges();
-                }
-
-                if (!context.IdentityResources.Any())
-                {
-                    foreach (var resource in IdentityConfiguration.IdentityResources)
-                    {
-                        context.IdentityResources.Add(resource.ToEntity());
-                    }
-                    context.SaveChanges();
-                }
-
-                if (!context.ApiResources.Any())
-                {
-                    foreach (var resource in IdentityConfiguration.ApiResources)
-                    {
-
-                        context.ApiResources.Add(resource.ToEntity());
-                    }
-                    context.SaveChanges();
-                }
-                if (!context.ApiScopes.Any())
-                {
-                    foreach (var resource in IdentityConfiguration.ApiScopes)
-                    {
-
-                        context.ApiScopes.Add(resource.ToEntity());
-                    }
-                    context.SaveChanges();
-                }
-                
-            }
-        }
+      
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IApiVersionDescriptionProvider provider)
         {
@@ -193,7 +171,7 @@ namespace BookStore.Authentication
             {
                 app.UseDeveloperExceptionPage();
             }
-            InitializeDatabase(app);
+
           
             app.UseHttpsRedirection();
             app.UseSwagger();
@@ -216,7 +194,6 @@ namespace BookStore.Authentication
             {
                 endpoints.MapControllers();
             });
-            app.UseIdentityServer();
         }
     }
 }
