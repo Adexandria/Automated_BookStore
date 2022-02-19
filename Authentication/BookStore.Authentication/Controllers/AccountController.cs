@@ -3,16 +3,25 @@ using Authentication.Application.Interface;
 using Authentication.Domain.Entities;
 using Authentication.Infrastructure.Service;
 using AutoMapper;
+using IdentityServer4;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using System.IdentityModel.Tokens.Jwt;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Security.Claims;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
+using System.Web;
 
 namespace BookStore.Authentication.Controllers
 {
@@ -26,18 +35,19 @@ namespace BookStore.Authentication.Controllers
         readonly IPasswordHasher<SignUp> passwordHasher;
         readonly SignInManager<SignUp> signInManager;
         readonly IMapper mapper;
-        readonly IFaculty faculty;
         readonly EmailService emailService;
+        private Credentials _credentials;
 
 
         public AccountController(SignInManager<SignUp> signInManager, UserManager<SignUp> userManager,
-            IMapper mapper, IPasswordHasher<SignUp> passwordHasher, EmailService emailService)
+            IMapper mapper, IPasswordHasher<SignUp> passwordHasher, EmailService emailService, Credentials _credentials)
         {
             this.mapper = mapper;
             this.userManager = userManager;
             this.passwordHasher = passwordHasher;
             this.signInManager = signInManager;
             this.emailService = emailService;
+            this._credentials = _credentials;
         }
 
 
@@ -67,7 +77,9 @@ namespace BookStore.Authentication.Controllers
                     if (identity.Succeeded)
                     {
                         await userManager.AddToRoleAsync(user, "Student");
-                        await userManager.AddClaimAsync(user, new Claim($"{user.UserName }", "Student"));
+                        await userManager.AddClaimAsync(user, new Claim(ClaimTypes.Role, "Student"));
+                        await userManager.AddClaimAsync(user, new Claim(ClaimTypes.Name, $"{user.Email}"));
+
                         string token = await EmailConfirmationToken(user);
                         Mail newMail = new Mail {
                             To = user.Email,
@@ -116,7 +128,7 @@ namespace BookStore.Authentication.Controllers
         [AllowAnonymous]
         [Produces("application/json")]
         [HttpPost("emailconfirmation",Name ="EmailConfirmation")]
-        public async Task<ActionResult> VerifyEmailToken(Token token, string email)
+        public async Task<ActionResult> VerifyEmailToken([FromBody]Token token,string email)
         {
             try
             {
@@ -163,7 +175,6 @@ namespace BookStore.Authentication.Controllers
         {
             try
             {
-
                 SignUp logindetails = mapper.Map<SignUp>(user);
                 SignUp currentUser = await GetUser(logindetails.Email);
                 if (currentUser == null)
@@ -175,9 +186,17 @@ namespace BookStore.Authentication.Controllers
                 PasswordVerificationResult passwordVerifyResult = passwordHasher.VerifyHashedPassword(currentUser, currentUser.PasswordHash, user.Password);
                 if (passwordVerifyResult.ToString() == "Success")
                 {
-                    await signInManager.PasswordSignInAsync(currentUser.UserName, currentUser.PasswordHash, false, false);
-                    string bearertoken = Convert.ToBase64String(Encoding.UTF8.GetBytes($"{currentUser.UserName}:{user.Password}"));
-                    return Ok($"bearer:{bearertoken}");
+                   
+                    var claims = new List<Claim> { new Claim(ClaimTypes.Name, user.Email), new Claim(ClaimTypes.Role,"Student") };
+                    var identity = new ClaimsIdentity(claims,JwtBearerDefaults.AuthenticationScheme);
+
+                    await signInManager.SignInWithClaimsAsync(currentUser, null, claims);
+
+                    var signingCredentials = _credentials.GetSigningCredentials();
+                    var tokenOptions = _credentials.GenerateTokenOptions(signingCredentials, claims);
+                    var token = new JwtSecurityTokenHandler().WriteToken(tokenOptions);
+
+                    return Ok(token);         
                 }
 
                 return BadRequest("username or password is not correct");
@@ -189,31 +208,23 @@ namespace BookStore.Authentication.Controllers
             }
 
         }
-        ///<param name="email">
-        ///a user name string object
-        ///</param>
+
+
         /// <summary>
         ///sign out User
         /// </summary>
         /// 
         /// <returns>200 response</returns>
-
-        //To generate the token to reset password
         [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [Authorize("BasicAuthentication")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         [Produces("application/json")]
         [HttpPost("signout")]
         public async Task<ActionResult> SignOut()
         {
             try
             {
-                if (signInManager.IsSignedIn(this.User))
-                {
-                    await signInManager.SignOutAsync();
-                    return Ok("Signed out");
-                }
-                return BadRequest("This user isn't signed in");
+               await signInManager.SignOutAsync();
+               return Ok("Signed out");
             }
             catch (Exception e)
             {
@@ -235,7 +246,6 @@ namespace BookStore.Authentication.Controllers
         {
             return await userManager.FindByEmailAsync(email);
         }
-
 
     }
 }
