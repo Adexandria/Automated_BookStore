@@ -172,8 +172,7 @@ namespace BookStore.Authentication
                 app.UseDeveloperExceptionPage();
             }
 
-          
-            app.UseHttpsRedirection();
+         
             app.UseSwagger();
             app.UseSwaggerUI(setupAction =>
             {
