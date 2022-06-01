@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -10,9 +11,8 @@ namespace Bookstore.Model
         public Guid OrderId { get; set; }
         [ForeignKey("UserProfile")]
         public Guid ProfileId { get; set; }
-        [ForeignKey("OrderCart")]
-        public Guid CartId { get; set; }
-        public OrderCart OrderCart { get; set; }
+        public UserProfile Profile { get; set; }
+        public List<OrderCart> OrderCart { get; set; }
         public OrderStatus Status { get; set; }
     }
 }

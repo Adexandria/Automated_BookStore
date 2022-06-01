@@ -15,7 +15,8 @@ namespace Bookstore.Model
         public Guid BookId { get; set; }
         public Book Book { get; set; }
         public int Quantity { get; set; }
-        [ForeignKey("UserProfile")]
-        public Guid ProfileId { get; set; }
+        [ForeignKey("Order")]
+        public Guid OrderId { get; set; }
+        public Order Order { get; set; }
     }
 }
