@@ -15,6 +15,8 @@ using System.Threading.Tasks;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Microsoft.OpenApi.Models;
+using Bookstore.Service;
+using Microsoft.EntityFrameworkCore;
 
 namespace Bookstore
 {
@@ -32,6 +34,10 @@ namespace Bookstore
         {
             var jwtSettings = Configuration.GetSection("JwtSettings");
             services.AddControllers();
+            services.AddDbContext<DbService>(s =>
+            {
+                s.UseSqlServer(Configuration["ConnectionStrings:Authentication"]).EnableSensitiveDataLogging();
+            });
 
             services.AddAuthentication(options =>
             {
