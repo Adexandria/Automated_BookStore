@@ -11,9 +11,9 @@ namespace Bookstore.Model
     {
         [Key]
         public Guid ProfileId { get; set; }
-        public Guid Id { get; set; }
+        public string Id { get; set; }
         [ForeignKey("Address")]
-        public Address AddressId { get; set; }
+        public Guid AddressId { get; set; }
         public Address Address { get; set; }
     }
 }

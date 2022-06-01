@@ -1,9 +1,11 @@
 ﻿using System;
+using System.ComponentModel.DataAnnotations;
 
 namespace Bookstore.Model
 {
     public class Address
     {
+        [Key]
         public Guid AddressId { get; set; }
         public string AdressBox { get; set; }
         public string StreetNo { get; set; }
