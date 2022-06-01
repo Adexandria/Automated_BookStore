@@ -8,7 +8,7 @@ namespace Authentication.Domain.Entities
     {
         [Key]
         public Guid DepartmentId { get; set; }
-        public string Deparment { get; set; }
+        public string DepartmentName{ get; set; }
 
         [ForeignKey("FacultyId")]
         public Guid FacultyId { get; set; }
