@@ -5,11 +5,13 @@ VisualStudioVersion = 16.0.31205.134
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BookStore.Authentication", "Authentication\BookStore.Authentication\BookStore.Authentication.csproj", "{381E33E9-C03D-470C-B60F-137BE5EDC161}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Authentication.Domain", "Authentication\Authentication.Domain\Authentication.Domain.csproj", "{B76BA02B-83B9-4DCD-87ED-EF58F332AEE6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Authentication.Domain", "Authentication\Authentication.Domain\Authentication.Domain.csproj", "{B76BA02B-83B9-4DCD-87ED-EF58F332AEE6}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Authentication.Infrastructure", "Authentication\Authentication.Infrastructure\Authentication.Infrastructure.csproj", "{04AA1083-F3F0-485F-9650-46222747FAE8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Authentication.Infrastructure", "Authentication\Authentication.Infrastructure\Authentication.Infrastructure.csproj", "{04AA1083-F3F0-485F-9650-46222747FAE8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Authentication.Application", "Authentication\Authentication.Application\Authentication.Application.csproj", "{540457CF-5388-40E3-A15D-09EB3BFC2382}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Authentication.Application", "Authentication\Authentication.Application\Authentication.Application.csproj", "{540457CF-5388-40E3-A15D-09EB3BFC2382}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bookstore", "Bookstore\Bookstore.csproj", "{763FD479-6BEF-4082-BB77-495899EB58F4}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,6 +35,10 @@ Global
 		{540457CF-5388-40E3-A15D-09EB3BFC2382}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{540457CF-5388-40E3-A15D-09EB3BFC2382}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{540457CF-5388-40E3-A15D-09EB3BFC2382}.Release|Any CPU.Build.0 = Release|Any CPU
+		{763FD479-6BEF-4082-BB77-495899EB58F4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{763FD479-6BEF-4082-BB77-495899EB58F4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{763FD479-6BEF-4082-BB77-495899EB58F4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{763FD479-6BEF-4082-BB77-495899EB58F4}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
