@@ -2,10 +2,13 @@ using System;
 using Bookstore.Model;
 using System.Threading.Tasks;
 
-public interface ICategory
+namespace Bookstore.Service.Interface
 {
-    //IEnumerable<BookCategory> GetAllBookCategories{get;}
-    Task<int> AddCategory(BookCategory category);
-    Task<int> UpdateCategory(BookCategory updatedCategory);
-    Task<int> DeleteCategoryById(Guid categoryId);
+    public interface ICategory
+    {
+        //IEnumerable<BookCategory> GetAllBookCategories{get;}
+        Task<int> AddCategory(BookCategory category);
+        Task<int> UpdateCategory(BookCategory updatedCategory);
+        Task<int> DeleteCategoryById(Guid categoryId);
+    }
 }
