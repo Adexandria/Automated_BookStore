@@ -12,5 +12,6 @@ namespace Bookstore.Model
         public string City { get; set; }
         public string State { get; set; }
         public string Phonenumber { get; set; }
+        public Guid ProfileId { get; set; }
     }
 }
