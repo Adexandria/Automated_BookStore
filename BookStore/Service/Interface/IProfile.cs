@@ -8,8 +8,10 @@ namespace Bookstore.Service.Interface
 {
     public interface IProfile
     {
+        Task<UserProfile> GetProfile(Guid userId);
         Task<int> AddUserProfile(UserProfile profile);
         Task<int> UpdateUserProfile(UserProfile profile);
         Task<int> DeleteUserProfile(Guid profileId);
+        
     }
 }
