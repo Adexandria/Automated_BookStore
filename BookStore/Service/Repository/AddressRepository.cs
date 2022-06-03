@@ -49,6 +49,11 @@ namespace Bookstore.Service.Repository
 
         }
 
+        public async Task<Address> GetAddressByProfileId(Guid profileId)
+        {
+            return await db.Addresses.Where(s => s.ProfileId == profileId).FirstOrDefaultAsync();
+        }
+
         public async Task<int> UpdateAddress(Address address)
         {
             try
