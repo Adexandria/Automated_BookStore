@@ -8,6 +8,7 @@ namespace Bookstore.Service.Interface
 {
     public interface IAddress
     {
+        Task<Address> GetAddressByProfileId(Guid profileId);
         Task<int> AddAddresss(Address address, Guid profileId);
         Task<int> UpdateAddress(Address address);
         Task<int> DeleteAddressById(Guid addressId);
