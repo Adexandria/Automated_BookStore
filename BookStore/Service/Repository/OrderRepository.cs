@@ -33,9 +33,9 @@ namespace Bookstore.Service.Repository
 
       
 
-        public IEnumerable<Order> GetOrdersByStatus(string status)
+        public IEnumerable<Order> GetOrdersByStatus(int status)
         {
-            return db.Orders.Where(s => s.Status.ToString() == status).OrderBy(s=>s.OrderId);
+            return db.Orders.Where(s => (int)s.Status == status).OrderBy(s=>s.OrderId);
         }
 
         public async Task<Order> GetOrdersByTrackingNumber(Guid trackingNumber)

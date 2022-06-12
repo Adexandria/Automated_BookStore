@@ -49,11 +49,11 @@ namespace Bookstore.Service.Repository
         {
             return db.Carts.Where(s => s.OrderId == orderId).Include(s => s.Book).OrderBy(s => s.BookId);
         }
-        public async Task<int> UpdateCart(OrderCart cart)
+        public async Task<int> UpdateCart(OrderCart cart,Guid bookId)
         {
             try
             {
-                OrderCart currentCart = await GetCart(cart.CartId);
+                OrderCart currentCart = await GetCartByBookId(bookId);
                 db.Entry(currentCart).CurrentValues.SetValues(cart);
                 db.Entry(currentCart).State = EntityState.Modified;
                 return await SaveChanges();
@@ -63,6 +63,12 @@ namespace Bookstore.Service.Repository
 
                 throw ex;
             }
+        }
+        private async Task<OrderCart> GetCartByBookId(Guid bookId)
+        {
+            var x = await db.Carts.Where(s => s.BookId == bookId).Include(s => s.Order).Where(s => s.Order.Status == OrderStatus.NotPaid)
+                .FirstOrDefaultAsync();
+            return x;
         }
         private async Task<OrderCart> GetCart(Guid cartId)
         {
