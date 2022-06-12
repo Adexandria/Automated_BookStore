@@ -17,6 +17,8 @@ using System.Text;
 using Microsoft.OpenApi.Models;
 using Bookstore.Service;
 using Microsoft.EntityFrameworkCore;
+using Bookstore.Model;
+using Microsoft.AspNetCore.Identity;
 
 namespace Bookstore
 {
