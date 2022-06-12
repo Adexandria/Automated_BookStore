@@ -46,10 +46,10 @@ namespace Bookstore.Test
             {
                 BookId = Guid.Parse("a05ce308-15bc-4a28-965b-178f2319b644"),
                 OrderId = Guid.Parse("52d59a50-9578-4dd1-81de-fc4192610968"),
-                Quantity = 2,
+                Quantity = 4,
                 CartId = Guid.Parse("ab443966-6f92-48b3-b219-3d46c4e910f9")
             };
-            int updatedRow = _cart.UpdateCart(cart).Result;
+            int updatedRow = _cart.UpdateCart(cart,cart.BookId).Result;
             Assert.Equal(1, updatedRow);
         }
 
