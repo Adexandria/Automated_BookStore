@@ -1,5 +1,7 @@
 ﻿using Bookstore.Model;
 using Bookstore.Service.Interface;
+using Mapster;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -40,10 +42,11 @@ namespace Bookstore.Service.Repository
         {
             try
             {
-                UserProfile currentProfile = await GetProfileById(profile.ProfileId);
-                db.Entry(currentProfile).CurrentValues.SetValues(profile);
-                db.Entry(currentProfile).State = EntityState.Modified;
+                UserProfile currentUser = await GetProfileById(profile.Id);
+                db.Entry(currentUser).CurrentValues.SetValues(profile);
+                db.Entry(currentUser).State = EntityState.Modified;
                 return await SaveChanges();
+
             }
             catch (Exception ex)
             {
@@ -51,11 +54,11 @@ namespace Bookstore.Service.Repository
                 throw ex;
             }
         }
-        public async Task<int> DeleteUserProfile(Guid profileId)
+        public async Task<int> DeleteUserProfile(string userId)
         {
             try
             {
-                UserProfile currentProfile = await GetProfileById(profileId);
+                UserProfile currentProfile = await GetProfileById(userId);
                 db.UserProfiles.Remove(currentProfile);
                 return await SaveChanges();
             }
@@ -65,10 +68,9 @@ namespace Bookstore.Service.Repository
                 throw ex;
             }
         }
-
-        private async Task<UserProfile> GetProfileById(Guid profileId)
+        private async Task<UserProfile> GetProfileById(string userId)
         {
-            return await db.UserProfiles.Where(s => s.ProfileId == profileId).FirstOrDefaultAsync();
+            return await db.UserProfiles.Where(s => s.Id == userId).FirstOrDefaultAsync();
         }
 
         
