@@ -14,8 +14,8 @@ namespace Authentication.Infrastructure.Service
     public class Credentials
     {
         readonly IConfiguration _config;
-        readonly UserManager<SignUp> _userManager;
-        public Credentials(IConfiguration _config, UserManager<SignUp> _userManager)
+        readonly UserManager<User> _userManager;
+        public Credentials(IConfiguration _config, UserManager<User> _userManager)
         {
             this._config = _config;
             this._userManager = _userManager;
@@ -43,7 +43,7 @@ namespace Authentication.Infrastructure.Service
             signingCredentials: signingCredentials);
             return tokenOptions;
         }
-        public async Task<List<Claim>> GetClaims(SignUp user)
+        public async Task<List<Claim>> GetClaims(User user)
         {
             var claims = new List<Claim>
             {
