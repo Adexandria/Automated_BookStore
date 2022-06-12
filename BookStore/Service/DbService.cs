@@ -1,4 +1,5 @@
 ﻿using Bookstore.Model;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
