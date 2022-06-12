@@ -10,7 +10,7 @@ namespace Bookstore.Service.Interface
     {
         IEnumerable<OrderCart> GetOrdersCart(Guid orderId);
         Task<int> AddToCart(OrderCart cart);
-        Task<int> UpdateCart(OrderCart cart);
+        Task<int> UpdateCart(OrderCart cart,Guid BookId);
         Task<int> DeleteFromCart(Guid cartId);
     }
 }

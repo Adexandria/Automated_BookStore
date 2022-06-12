@@ -9,7 +9,7 @@ namespace Bookstore.Service.Interface
     public interface IOrder
     {
         IEnumerable<Order> GetUserOrders(Guid profileId);
-        IEnumerable<Order> GetOrdersByStatus(string status);
+        IEnumerable<Order> GetOrdersByStatus(int status);
         Task<Order> GetOrdersByTrackingNumber(Guid trackingNumber);
 
         Task<int> AddOrder(Order order);
