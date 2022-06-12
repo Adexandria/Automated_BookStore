@@ -50,7 +50,6 @@ namespace BookStore.Authentication
             services.AddScoped<IFaculty, FacultyRepository>();
             services.AddScoped<EmailService>();
             services.AddControllers();
-            services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
             services.AddScoped<Credentials>();
 
             services.AddAuthentication(options =>
@@ -89,7 +88,7 @@ namespace BookStore.Authentication
             services.AddDbContext<AuthDbService>(s => {
                 s.UseSqlServer(Configuration["ConnectionStrings:Authentication"],s=> s.MigrationsAssembly(migrationsAssembly)).EnableSensitiveDataLogging();
             });
-            services.AddIdentity<SignUp, IdentityRole>().AddEntityFrameworkStores<AuthDbService>().AddDefaultTokenProviders();
+            services.AddIdentity<User, IdentityRole>().AddEntityFrameworkStores<AuthDbService>().AddDefaultTokenProviders();
             
             
 
