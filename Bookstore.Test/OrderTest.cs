@@ -3,7 +3,6 @@ using Bookstore.Service.Repository;
 using Bookstore.Model;
 using System;
 using System.Collections.Generic;
-using System.Text;
 using Microsoft.EntityFrameworkCore;
 using Bookstore.Service;
 using Xunit;
@@ -63,7 +62,7 @@ namespace Bookstore.Test
         [Fact]
         public void GetordersByStatus_Test()
         {
-            IEnumerable<Order> orders = _order.GetOrdersByStatus("Processing");
+            IEnumerable<Order> orders = _order.GetOrdersByStatus(0);
             Assert.NotEmpty(orders);
         }
         [Fact]
