@@ -2,9 +2,6 @@
 using Authentication.Application.Interface;
 using Authentication.Domain.Entities;
 using Authentication.Infrastructure.Service;
-using AutoMapper;
-using IdentityServer4;
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -22,6 +19,9 @@ using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using System.Web;
+using Mapster;
+using Bookstore.Model;
+using Bookstore.Service.Interface;
 
 namespace BookStore.Authentication.Controllers
 {
@@ -31,23 +31,23 @@ namespace BookStore.Authentication.Controllers
     [Route("api/[controller]")]
     public class AccountController : ControllerBase
     {
-        readonly UserManager<SignUp> userManager;
-        readonly IPasswordHasher<SignUp> passwordHasher;
-        readonly SignInManager<SignUp> signInManager;
-        readonly IMapper mapper;
+        readonly UserManager<User> userManager;
+        readonly IPasswordHasher<User> passwordHasher;
+        readonly SignInManager<User> signInManager;
         readonly EmailService emailService;
-        private Credentials _credentials;
+        readonly Credentials _credentials;
+        readonly IProfile _profile;
 
 
-        public AccountController(SignInManager<SignUp> signInManager, UserManager<SignUp> userManager,
-            IMapper mapper, IPasswordHasher<SignUp> passwordHasher, EmailService emailService, Credentials _credentials)
+        public AccountController(SignInManager<User> signInManager, UserManager<User> userManager, 
+            IPasswordHasher<User> passwordHasher, EmailService emailService, Credentials _credentials, IProfile _profile)
         {
-            this.mapper = mapper;
             this.userManager = userManager;
             this.passwordHasher = passwordHasher;
             this.signInManager = signInManager;
             this.emailService = emailService;
             this._credentials = _credentials;
+            this._profile = _profile;
         }
 
 
@@ -69,16 +69,18 @@ namespace BookStore.Authentication.Controllers
         {
             try
             {
-                SignUp user = mapper.Map<SignUp>(newUser);
+                User user = newUser.Adapt<User>();
+                UserProfile profile = newUser.Adapt<UserProfile>();
                 if (newUser.Password.Equals(newUser.ReTypePassword))
                 {
-                    user.UserName = user.Email;
+                    user.UserName = profile.MatriculationNumber;
                     IdentityResult identity = await userManager.CreateAsync(user, user.PasswordHash);
                     if (identity.Succeeded)
                     {
                         await userManager.AddToRoleAsync(user, "Student");
                         await userManager.AddClaimAsync(user, new Claim(ClaimTypes.Role, "Student"));
                         await userManager.AddClaimAsync(user, new Claim(ClaimTypes.Name, $"{user.Email}"));
+                        await _profile.AddUserProfile(profile);
 
                         string token = await EmailConfirmationToken(user);
                         Mail newMail = new Mail {
@@ -89,7 +91,7 @@ namespace BookStore.Authentication.Controllers
                         bool isSuccessful = await emailService.SendSimpleMessage(newMail);
                         if (isSuccessful)
                         {
-                            return this.StatusCode(StatusCodes.Status201Created, $"Welcome,{user.First_Name} verify your email");
+                            return this.StatusCode(StatusCodes.Status201Created, $"Welcome,{profile.FirstName} verify your email");
                         }
                         return BadRequest();
                     }
@@ -132,7 +134,7 @@ namespace BookStore.Authentication.Controllers
         {
             try
             {
-                SignUp currentUser = await GetUser(email);
+                User currentUser = await GetUser(email);
                 if (currentUser == null)
                 {
                     return NotFound("username doesn't exist");
@@ -175,8 +177,8 @@ namespace BookStore.Authentication.Controllers
         {
             try
             {
-                SignUp logindetails = mapper.Map<SignUp>(user);
-                SignUp currentUser = await GetUser(logindetails.Email);
+                User logindetails = user.Adapt<User>();
+                User currentUser = await GetUser(logindetails.Email);
                 if (currentUser == null)
                 {
                     return NotFound("username or password is not correct");
@@ -235,14 +237,14 @@ namespace BookStore.Authentication.Controllers
 
 
         [NonAction]
-        private async Task<string> EmailConfirmationToken(SignUp newUser)
+        private async Task<string> EmailConfirmationToken(User newUser)
         {
             return await userManager.GenerateEmailConfirmationTokenAsync(newUser);
 
         }
 
         [NonAction]
-        private async Task<SignUp> GetUser(string email)
+        private async Task<User> GetUser(string email)
         {
             return await userManager.FindByEmailAsync(email);
         }
