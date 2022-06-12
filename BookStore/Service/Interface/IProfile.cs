@@ -11,7 +11,7 @@ namespace Bookstore.Service.Interface
         Task<UserProfile> GetProfile(string userId);
         Task<int> AddUserProfile(UserProfile profile);
         Task<int> UpdateUserProfile(UserProfile profile);
-        Task<int> DeleteUserProfile(Guid profileId);
+        Task<int> DeleteUserProfile(string userId);
         
     }
 }
