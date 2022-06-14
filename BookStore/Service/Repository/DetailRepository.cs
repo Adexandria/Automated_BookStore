@@ -60,7 +60,7 @@ namespace Bookstore.Service.Repository
                 throw ex;
             }
         }
-        private async Task<BookDetail> GetDetail(Guid detailId)
+        public async Task<BookDetail> GetDetail(Guid detailId)
         {
             return await db.BookDetails.Where(s => s.DetailId == detailId).FirstOrDefaultAsync();
         }

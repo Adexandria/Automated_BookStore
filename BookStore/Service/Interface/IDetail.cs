@@ -9,5 +9,6 @@ namespace Bookstore.Service.Interface
         Task<int> AddDetail(BookDetail detail);
         Task<int> UpdateDetail(BookDetail updatedDetail);
         Task<int> DeleteDetailById(Guid detailId);
+        Task<BookDetail> GetDetail(Guid detailId);
     }
 }
