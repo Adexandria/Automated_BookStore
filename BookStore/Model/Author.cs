@@ -13,8 +13,5 @@ namespace Bookstore.Model
         public Guid AuthorId { get; set; }
         public string Name { get; set; }
         public string Biography { get; set; }
-        [ForeignKey("Book")]
-        public Guid BookId { get; set; }
-        public Book Book { get; set; }
     }
 }
