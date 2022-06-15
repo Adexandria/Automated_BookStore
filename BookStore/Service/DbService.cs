@@ -22,6 +22,7 @@ namespace Bookstore.Service
         public DbSet<UserProfile> UserProfiles { get; set; }
         public DbSet<Order> Orders { get; set; }
         public DbSet<OrderCart> Carts { get; set; }
+        public DbSet<BookAuthor> BookAuthors { get; set; }
 
     }
 }
