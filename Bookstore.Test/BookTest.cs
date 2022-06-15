@@ -79,7 +79,7 @@ namespace Bookstore.Test
         [Fact]
         public void GetBookByISBN()
         {
-            Book book = _book.GetBookByISBN13("1234").Result;
+            Book book = _book.GetBookByISBN("1234").Result;
             Assert.NotNull(book);
         }
         [Fact]
