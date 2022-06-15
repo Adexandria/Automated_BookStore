@@ -6,7 +6,7 @@ namespace Bookstore.Service.Interface
 {
     public interface ICategory
     {
-        //IEnumerable<BookCategory> GetAllBookCategories{get;}
+        Task<BookCategory> GetCategory(Guid categoryId);
         Task<int> AddCategory(BookCategory category);
         Task<int> UpdateCategory(BookCategory updatedCategory);
         Task<int> DeleteCategoryById(Guid categoryId);
