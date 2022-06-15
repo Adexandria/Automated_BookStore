@@ -44,7 +44,11 @@ namespace Bookstore.Service.Repository
             return await db.Books.Where(s => s.BookId == bookId).FirstOrDefaultAsync();
         }
 
-        public async Task<Book> GetBookByISBN13(string isbn)
+        public IEnumerable<Author> GetAuthorByBookId(Guid bookId)
+        {
+            return  db.BookAuthors.Include(s => s.Author).Where(s => s.BookId == bookId).Select(s => s.Author);
+        }
+        public async Task<Book> GetBookByISBN(string isbn)
         {
             Guid detailId = await db.BookDetails.Where(s => s.ISBN13 == isbn).Select(s => s.DetailId).FirstOrDefaultAsync();
             return await db.Books.Where(s => s.DetailId == detailId).FirstOrDefaultAsync();
@@ -57,7 +61,7 @@ namespace Bookstore.Service.Repository
 
         public IEnumerable<Book> GetBooksByAuthor(string author)
         {
-            return db.Authors.Where(s => s.Name.Contains(author)).Include(s => s.Book).Select(s => s.Book);
+            return db.BookAuthors.Include(s => s.Book).Include(s=>s.Author).Where(s => s.Author.Name.Contains(author)).Select(s => s.Book);
         }
 
         public IEnumerable<Book> GetBooksByFaculty(string faculty)
@@ -65,9 +69,9 @@ namespace Bookstore.Service.Repository
             return db.Books.Include(s => s.Category).Where(s => s.Category.Faculty == faculty);
         }
 
-        public IEnumerable<Book> GetBooksByLevel(string faculty, int level)
+        public IEnumerable<Book> GetBooksByLevel(string department, int level)
         {
-            return db.Books.Include(s => s.Category).Where(s => s.Category.Faculty == faculty).Where(s=>s.Category.Level == level);
+            return db.Books.Include(s => s.Category).Where(s => s.Category.Department == department).Where(s=>s.Category.Level == level);
         }
 
         public async Task<int> UpdateBook(Book updatedBook)
@@ -107,5 +111,7 @@ namespace Bookstore.Service.Repository
         {
             return await db.SaveChangesAsync();
         }
+
+        
     }
 }

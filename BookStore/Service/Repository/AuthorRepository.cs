@@ -2,6 +2,7 @@
 using Bookstore.Service.Interface;
 using Microsoft.EntityFrameworkCore;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -59,8 +60,7 @@ namespace Bookstore.Service.Repository
                 throw ex;
             }
         }
-
-        private async Task<Author> GetAuthor(Guid authorId)
+        public async Task<Author> GetAuthor(Guid authorId)
         {
             return await db.Authors.Where(s => s.AuthorId == authorId).FirstOrDefaultAsync();
         }

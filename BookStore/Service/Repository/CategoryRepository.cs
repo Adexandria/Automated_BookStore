@@ -61,7 +61,7 @@ namespace Bookstore.Service.Repository
             }
         }
 
-        private async Task<BookCategory> GetCategory(Guid categoryId)
+        public async Task<BookCategory> GetCategory(Guid categoryId)
         {
             return await db.BookCategories.Where(s => s.CategoryId == categoryId).FirstOrDefaultAsync();
         }
