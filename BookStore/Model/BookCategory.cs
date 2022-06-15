@@ -8,6 +8,7 @@ namespace Bookstore.Model
         [Key]
         public Guid CategoryId { get; set; }
         public string Faculty { get; set; }
+        public string Department { get; set; }
         public int Level { get; set; }
     }
 }
