@@ -18,12 +18,12 @@ namespace Bookstore.Test
             DbService db = new DbService(optionsBuilder.Options);
             this._address = new AddressRepository(db);
         }
-
+/*
        [Fact]
         public void GetAddress_Test()
         {
             Guid profileId = Guid.Parse("6bbeb8cb-72ce-460c-b2cc-33ff1f510b33");
-            Address address = _address.GetAddressByProfileId(profileId).Result;
+            Address address = _address.GetAddressByProfileId(profileId).R;
             Assert.NotNull(address);
         }
 
@@ -62,6 +62,6 @@ namespace Bookstore.Test
         {
             int deletedRow = _address.DeleteAddressById(Guid.Parse("609614f3-1124-4444-820f-8b217667460f")).Result;
             Assert.Equal(1, deletedRow);
-        }
+        }*/
     }
 }

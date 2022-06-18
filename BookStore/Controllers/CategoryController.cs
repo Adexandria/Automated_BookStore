@@ -22,7 +22,7 @@ namespace Bookstore.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult> AddCategory(CategoryCreate newCategory)
+        public async Task<IActionResult> AddCategory(CategoryCreate newCategory)
         {
             BookCategory category = newCategory.Adapt<BookCategory>();
             await _categoryDb.AddCategory(category);
@@ -30,7 +30,7 @@ namespace Bookstore.Controllers
         } 
 
         [HttpPut("{categoryId}")]
-        public async Task<ActionResult> UpdateCategory(Guid categoryId,CategoryUpdate updatedCategory)
+        public async Task<IActionResult> UpdateCategory(Guid categoryId,CategoryUpdate updatedCategory)
         {
             BookCategory category = updatedCategory.Adapt<BookCategory>();
             BookCategory currentCategory = await _categoryDb.GetCategory(categoryId);
@@ -43,7 +43,7 @@ namespace Bookstore.Controllers
         }
 
         [HttpDelete("{categoryId}")]
-        public async Task<ActionResult> DeleteCategory(Guid categoryId)
+        public async Task<IActionResult> DeleteCategory(Guid categoryId)
         {
             BookCategory currentCategory = await _categoryDb.GetCategory(categoryId);
             if (currentCategory == null)

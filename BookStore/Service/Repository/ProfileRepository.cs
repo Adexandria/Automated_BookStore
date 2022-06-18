@@ -18,9 +18,9 @@ namespace Bookstore.Service.Repository
             this.db = db;
         }
 
-        public async Task<UserProfile> GetProfile(string userId)
+        public async Task<UserProfile> GetProfile(Guid profileId)
         {
-            return await db.UserProfiles.Where(s => s.Id == userId).FirstOrDefaultAsync();
+            return await db.UserProfiles.Where(s => s.ProfileId == profileId).Include(s=>s.User).FirstOrDefaultAsync();
         }
         public async Task<int> AddUserProfile(UserProfile profile)
         {
@@ -42,7 +42,7 @@ namespace Bookstore.Service.Repository
         {
             try
             {
-                UserProfile currentUser = await GetProfileById(profile.Id);
+                UserProfile currentUser = await GetProfile(profile.ProfileId);
                 db.Entry(currentUser).CurrentValues.SetValues(profile);
                 db.Entry(currentUser).State = EntityState.Modified;
                 return await SaveChanges();
@@ -54,11 +54,11 @@ namespace Bookstore.Service.Repository
                 throw ex;
             }
         }
-        public async Task<int> DeleteUserProfile(string userId)
+        public async Task<int> DeleteUserProfile(Guid profileId)
         {
             try
             {
-                UserProfile currentProfile = await GetProfileById(userId);
+                UserProfile currentProfile = await GetProfile(profileId);
                 db.UserProfiles.Remove(currentProfile);
                 return await SaveChanges();
             }

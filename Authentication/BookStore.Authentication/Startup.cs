@@ -2,6 +2,9 @@ using Authentication.Application.Interface;
 using Authentication.Domain.Entities;
 using Authentication.Infrastructure.Repository;
 using Authentication.Infrastructure.Service;
+using Bookstore.Service;
+using Bookstore.Service.Interface;
+using Bookstore.Service.Repository;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -18,6 +21,8 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System;
+using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Text;
 
@@ -39,10 +44,16 @@ namespace BookStore.Authentication
             var jwtSettings = Configuration.GetSection("JwtSettings");
 
             services.AddScoped<IFaculty, FacultyRepository>();
+            services.AddScoped<IBook, BookRepository>();
+            services.AddScoped<IAuthor, AuthorRepository>();
+            services.AddScoped<IBookAuthor, BookAuthorRepository>();
             services.AddScoped<EmailService>();
             services.AddControllers();
             services.AddScoped<Credentials>();
-
+            services.AddDbContext<DbService>(s =>
+            {
+                s.UseSqlServer(Configuration["ConnectionStrings:Authentication"]).EnableSensitiveDataLogging();
+            });
             services.AddAuthentication(options =>
             {
                 options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -71,7 +82,7 @@ namespace BookStore.Authentication
             });
             services.AddVersionedApiExplorer(setup =>
             {
-                setup.GroupNameFormat = "'v'VVV";
+                setup.GroupNameFormat = "'authenticationv'VVV";
                 setup.SubstituteApiVersionInUrl = true;
             });
            
@@ -108,11 +119,11 @@ namespace BookStore.Authentication
 
             services.AddSwaggerGen(c =>
             {
-                c.SwaggerDoc("v1", new OpenApiInfo()
+                c.SwaggerDoc("authenticationv1", new OpenApiInfo()
                 {
-                    Title = "BookStore Authentication API",
+                    Title = "BookStore API",
                     Version = "1.0",
-                    Description = "Authenticate registered users",
+                    Description = "Bookstore",
                     Contact = new OpenApiContact()
                     {
                         Email = "adeolaaderibigbe09@gmail.com",
@@ -122,6 +133,7 @@ namespace BookStore.Authentication
                     }
 
                 });
+                c.ResolveConflictingActions(apiDescriptions => apiDescriptions.First());
 
                 c.AddSecurityDefinition("bearer", new OpenApiSecurityScheme
                 {
@@ -149,6 +161,10 @@ namespace BookStore.Authentication
                     }
 
                 });
+                var xmlCommentFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+                var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlCommentFile);
+                //... and tell Swagger to use those XML comments.
+                c.IncludeXmlComments(xmlPath);
             });
             
         }
@@ -170,8 +186,7 @@ namespace BookStore.Authentication
                 foreach (var description in provider.ApiVersionDescriptions)
                 {
                     setupAction.SwaggerEndpoint(
-                        $"/swagger/{description.GroupName}/swagger.json",
-                        description.GroupName.ToUpperInvariant());
+                        $"/swagger/{description.GroupName}/swagger.json",description.GroupName);
                 }
                 setupAction.RoutePrefix = string.Empty;
             });

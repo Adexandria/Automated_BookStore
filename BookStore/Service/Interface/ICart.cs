@@ -9,8 +9,10 @@ namespace Bookstore.Service.Interface
     public interface ICart
     {
         IEnumerable<OrderCart> GetOrdersCart(Guid orderId);
-        Task<int> AddToCart(OrderCart cart);
-        Task<int> UpdateCart(OrderCart cart,Guid BookId);
-        Task<int> DeleteFromCart(Guid cartId);
+        Task<OrderCart> GetCartByBookId(Guid orderId, Guid bookId);
+        Task<OrderCart> GetCart(Guid orderId, Guid cartId);
+        Task<int> AddToCart(Guid orderId,OrderCart cart);
+        Task<int> UpdateCart(Guid orderId,Guid bookId,OrderCart cart);
+        Task<int> DeleteFromCart(Guid orderId,Guid cartId);
     }
 }

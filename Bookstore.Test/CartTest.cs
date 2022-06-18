@@ -20,7 +20,7 @@ namespace Bookstore.Test
             this._cart = new CartRepository(db);
         }
 
-        [Fact]
+       /* [Fact]
         public void GetOrderCart_Test()
         {
             IEnumerable<OrderCart> carts = _cart.GetOrdersCart(Guid.Parse("52d59a50-9578-4dd1-81de-fc4192610968"));
@@ -58,6 +58,6 @@ namespace Bookstore.Test
         {
             int deletedRow = _cart.DeleteFromCart(Guid.Parse("7b3e5355-b55a-4ff8-be46-be67feeae04e")).Result;
             Assert.Equal(1, deletedRow);
-        }
+        }*/
    }
 }

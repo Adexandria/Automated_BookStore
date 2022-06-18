@@ -15,7 +15,7 @@ namespace Bookstore.Service.Repository
         {
             this.db = db;
         }
-        public async Task<int> AddAddresss(Address address, Guid profileId)
+        public async Task<int> AddAddress(Address address, Guid profileId)
         {
             try
             {
@@ -32,11 +32,11 @@ namespace Bookstore.Service.Repository
             
         }
 
-        public async Task<int> DeleteAddressById(Guid addressId)
+        public async Task<int> DeleteAddressById(Guid addressId,Guid profileId)
         {
             try
             {
-                Address currentAddress = await GetAddress(addressId);
+                Address currentAddress = await GetAddress(addressId,profileId);
                 db.Addresses.Remove(currentAddress);
                 return await SaveChanges();
             }
@@ -49,16 +49,16 @@ namespace Bookstore.Service.Repository
 
         }
 
-        public async Task<Address> GetAddressByProfileId(Guid profileId)
+        public IEnumerable<Address> GetAddressByProfileId(Guid profileId)
         {
-            return await db.Addresses.Where(s => s.ProfileId == profileId).FirstOrDefaultAsync();
+            return  db.Addresses.Where(s => s.ProfileId == profileId);
         }
 
-        public async Task<int> UpdateAddress(Address address)
+        public async Task<int> UpdateAddress(Address address,Guid profileId)
         {
             try
             {
-                Address currentAddress = await GetAddress(address.AddressId);
+                Address currentAddress = await GetAddress(address.AddressId,profileId);
                 db.Entry(currentAddress).CurrentValues.SetValues(address);
                 db.Entry(currentAddress).State = EntityState.Modified;
                 return await SaveChanges();
@@ -70,9 +70,9 @@ namespace Bookstore.Service.Repository
                 throw ex;
             }
         }
-        private async Task<Address> GetAddress(Guid addressId)
+        public async Task<Address> GetAddress(Guid addressId,Guid profileId)
         {
-            return await db.Addresses.Where(s => s.AddressId == addressId).FirstOrDefaultAsync(); 
+            return await db.Addresses.Where(s=>s.ProfileId == profileId).Where(s => s.AddressId == addressId).FirstOrDefaultAsync(); 
         }
         private async Task<int> SaveChanges()
         {

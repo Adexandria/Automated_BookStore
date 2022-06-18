@@ -11,8 +11,6 @@ namespace Bookstore.Model
         public Guid OrderId { get; set; }
         [ForeignKey("UserProfile")]
         public Guid ProfileId { get; set; }
-        public UserProfile Profile { get; set; }
-        public List<OrderCart> OrderCart { get; set; }
-        public OrderStatus Status { get; set; }
+        public OrderStatus Status { get; set; } = OrderStatus.NotPaid;
     }
 }

@@ -15,7 +15,7 @@ namespace Bookstore.Service.Repository
         {
             this.db = db;
         }
-        public async Task<int> AddToCart(OrderCart cart)
+        public async Task<int> AddToCart(Guid orderId,OrderCart cart)
         {
             try
             {
@@ -30,11 +30,11 @@ namespace Bookstore.Service.Repository
             }
         }
 
-        public async Task<int> DeleteFromCart(Guid cartId)
+        public async Task<int> DeleteFromCart(Guid orderId,Guid cartId)
         {
             try
             {
-                OrderCart currentCart = await GetCart(cartId);
+                OrderCart currentCart = await GetCart(orderId,cartId);
                 db.Carts.Remove(currentCart);
                 return await SaveChanges();
             }
@@ -49,11 +49,11 @@ namespace Bookstore.Service.Repository
         {
             return db.Carts.Where(s => s.OrderId == orderId).Include(s => s.Book).OrderBy(s => s.BookId);
         }
-        public async Task<int> UpdateCart(OrderCart cart,Guid bookId)
+        public async Task<int> UpdateCart(Guid orderId ,Guid bookId,OrderCart cart)
         {
             try
             {
-                OrderCart currentCart = await GetCartByBookId(bookId);
+                OrderCart currentCart = await GetCartByBookId(orderId,bookId);
                 db.Entry(currentCart).CurrentValues.SetValues(cart);
                 db.Entry(currentCart).State = EntityState.Modified;
                 return await SaveChanges();
@@ -64,15 +64,14 @@ namespace Bookstore.Service.Repository
                 throw ex;
             }
         }
-        private async Task<OrderCart> GetCartByBookId(Guid bookId)
+        public async Task<OrderCart> GetCartByBookId(Guid orderId,Guid bookId)
         {
-            var x = await db.Carts.Where(s => s.BookId == bookId).Include(s => s.Order).Where(s => s.Order.Status == OrderStatus.NotPaid)
+            return await db.Carts.Where(s=>s.OrderId==orderId).Where(s => s.BookId == bookId).Include(s => s.Order).Where(s => s.Order.Status == OrderStatus.NotPaid)
                 .FirstOrDefaultAsync();
-            return x;
         }
-        private async Task<OrderCart> GetCart(Guid cartId)
+        public async Task<OrderCart> GetCart(Guid orderId,Guid cartId)
         {
-            return await db.Carts.Where(s => s.CartId == cartId).FirstOrDefaultAsync();
+            return await db.Carts.Where(s=>s.OrderId == orderId).Where(s => s.CartId == cartId).FirstOrDefaultAsync();
         }
         private async Task<int> SaveChanges()
         {

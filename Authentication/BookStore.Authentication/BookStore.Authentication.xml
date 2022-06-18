@@ -1,0 +1,48 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>BookStore.Authentication</name>
+    </assembly>
+    <members>
+        <member name="M:BookStore.Authentication.Controllers.AccountController.SignUp(Authentication.Application.DTO.SignUpCreate)">
+            <param name="newUser">
+            an object to sign up a user
+            </param>
+             <summary>
+             Sign up a new user
+             </summary>
+             
+             <returns>201 response</returns>
+        </member>
+        <member name="M:BookStore.Authentication.Controllers.AccountController.VerifyEmailToken(Authentication.Domain.Entities.Token,System.String)">
+            <param name="email">
+            \a user's email
+            </param>
+            <param name="token">
+            a token to confirm user's email
+            </param>
+             <summary>
+            email confrimation
+             </summary>
+             
+             <returns>200 response</returns>
+        </member>
+        <member name="M:BookStore.Authentication.Controllers.AccountController.Login(Authentication.Application.DTO.Login)">
+            <param name="user">
+            an object to login
+            </param>
+             <summary>
+            Login User
+             </summary>
+             
+             <returns>200 response</returns>
+        </member>
+        <member name="M:BookStore.Authentication.Controllers.AccountController.SignOut">
+             <summary>
+            sign out User
+             </summary>
+             
+             <returns>200 response</returns>
+        </member>
+    </members>
+</doc>

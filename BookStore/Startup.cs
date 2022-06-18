@@ -19,6 +19,10 @@ using Bookstore.Service;
 using Microsoft.EntityFrameworkCore;
 using Bookstore.Model;
 using Microsoft.AspNetCore.Identity;
+using System.IO;
+using System.Reflection;
+using Bookstore.Service.Repository;
+using Bookstore.Service.Interface;
 
 namespace Bookstore
 {
@@ -40,7 +44,8 @@ namespace Bookstore
             {
                 s.UseSqlServer(Configuration["ConnectionStrings:Authentication"]).EnableSensitiveDataLogging();
             });
-
+            services.AddScoped<ICart, CartRepository>();
+            services.AddScoped<IBook, BookRepository>();
             services.AddAuthentication(options =>
             {
                 options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -73,7 +78,7 @@ namespace Bookstore
                 setup.SubstituteApiVersionInUrl = true;
             });
 
-            services.AddSwaggerGen(c =>
+            /*services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo()
                 {
@@ -89,6 +94,7 @@ namespace Bookstore
                     }
 
                 });
+                c.ResolveConflictingActions(apiDescriptions => apiDescriptions.First());
 
                 c.AddSecurityDefinition("bearer", new OpenApiSecurityScheme
                 {
@@ -116,8 +122,12 @@ namespace Bookstore
                     }
 
                 });
+                var xmlCommentFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+                var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlCommentFile);
+                //... and tell Swagger to use those XML comments.
+                c.IncludeXmlComments(xmlPath);
             });
-
+*/
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -129,7 +139,7 @@ namespace Bookstore
             }
 
             app.UseRouting();
-            app.UseSwagger();
+           /* app.UseSwagger();
             app.UseSwaggerUI(setupAction =>
             {
                 foreach (var description in provider.ApiVersionDescriptions)
@@ -139,7 +149,7 @@ namespace Bookstore
                         description.GroupName.ToUpperInvariant());
                 }
                 setupAction.RoutePrefix = string.Empty;
-            });
+            });*/
             app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>

@@ -48,11 +48,22 @@ namespace Bookstore.Service.Repository
             return db.Orders.Where(s => s.ProfileId == profileId).OrderBy(s => s.OrderId);
         }
 
+        public async Task<bool> CheckUserOrder(Guid profileId)
+        {
+            Order order = await db.Orders.Where(s => s.ProfileId == profileId).Where(s => s.Status == OrderStatus.NotPaid).FirstOrDefaultAsync();
+            if(order == null)
+            {
+                return false;
+            }
+            return true;
+        }
+
         public async Task<int> UpdateOrder(Order order)
         {
             try
             {
                 Order currentOrder = await GetOrdersByTrackingNumber(order.OrderId);
+                order.ProfileId = currentOrder.ProfileId;
                 db.Entry(currentOrder).CurrentValues.SetValues(order);
                 db.Entry(currentOrder).State = EntityState.Modified;
                 return await SaveChanges();
@@ -66,23 +77,11 @@ namespace Bookstore.Service.Repository
 
         }
 
-        public async Task<int> DeleteOrderById(Guid trackingNumber)
-        {
-            try
-            {
-                Order currentOrder = await GetOrdersByTrackingNumber(trackingNumber);
-                db.Orders.Remove(currentOrder);
-                return await SaveChanges();
-            }
-            catch (Exception ex)
-            {
-
-                throw ex;
-            }
-        }
         private async Task<int> SaveChanges()
         {
             return await db.SaveChangesAsync();
         }
+
+       
     }
 }

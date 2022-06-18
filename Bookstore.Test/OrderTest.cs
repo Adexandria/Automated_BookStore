@@ -45,13 +45,13 @@ namespace Bookstore.Test
             Assert.Equal(1, updatedRow);
         }
 
-        [Fact]
+      /*  [Fact]
         public void DeleteOrder_Test() 
         {
             int deletedRow = _order.DeleteOrderById(Guid.Parse("cfa4c243-e5ac-4d4a-bbd1-a11c8309ea3b")).Result;
             Assert.Equal(1, deletedRow);
         }
-
+*/
         [Fact]
         public void GetUserOrders_Test()
         {

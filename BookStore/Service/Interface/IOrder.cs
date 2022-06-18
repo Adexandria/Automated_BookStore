@@ -11,10 +11,11 @@ namespace Bookstore.Service.Interface
         IEnumerable<Order> GetUserOrders(Guid profileId);
         IEnumerable<Order> GetOrdersByStatus(int status);
         Task<Order> GetOrdersByTrackingNumber(Guid trackingNumber);
+        Task<bool> CheckUserOrder(Guid profileId);
 
         Task<int> AddOrder(Order order);
         Task<int> UpdateOrder(Order order);
-        Task<int> DeleteOrderById(Guid trackingNumber);
+        //Task<int> DeleteOrderById(Guid trackingNumber);
         
 
     }
