@@ -2,6 +2,11 @@ using Authentication.Application.Interface;
 using Authentication.Domain.Entities;
 using Authentication.Infrastructure.Repository;
 using Authentication.Infrastructure.Service;
+using Azure.Core.Extensions;
+using Azure.Storage.Blobs;
+using Bookstore.App.Service;
+using Bookstore.App.Service.Interface;
+using Bookstore.App.Service.Repository;
 using Bookstore.Service;
 using Bookstore.Service.Interface;
 using Bookstore.Service.Repository;
@@ -15,6 +20,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.AspNetCore.Mvc.Versioning;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Azure;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -24,6 +30,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Reflection.Metadata;
 using System.Text;
 
 namespace BookStore.Authentication
@@ -44,12 +51,16 @@ namespace BookStore.Authentication
             var jwtSettings = Configuration.GetSection("JwtSettings");
 
             services.AddScoped<IFaculty, FacultyRepository>();
+            services.AddScoped<IBlob, BlobRepository>();
             services.AddScoped<IBook, BookRepository>();
             services.AddScoped<IAuthor, AuthorRepository>();
+            services.AddScoped<IOrder, OrderRepository>();
+            services.AddScoped<ICart, CartRepository>();
             services.AddScoped<IBookAuthor, BookAuthorRepository>();
             services.AddScoped<EmailService>();
             services.AddControllers();
             services.AddScoped<Credentials>();
+            services.AddScoped<BookstoreService>();
             services.AddDbContext<DbService>(s =>
             {
                 s.UseSqlServer(Configuration["ConnectionStrings:Authentication"]).EnableSensitiveDataLogging();
@@ -85,14 +96,15 @@ namespace BookStore.Authentication
                 setup.GroupNameFormat = "'authenticationv'VVV";
                 setup.SubstituteApiVersionInUrl = true;
             });
-           
 
-            services.AddDbContext<AuthDbService>(s => {
-                s.UseSqlServer(Configuration["ConnectionStrings:Authentication"],s=> s.MigrationsAssembly(migrationsAssembly)).EnableSensitiveDataLogging();
+
+            services.AddDbContext<AuthDbService>(s =>
+            {
+                s.UseSqlServer(Configuration["ConnectionStrings:Authentication"], s => s.MigrationsAssembly(migrationsAssembly)).EnableSensitiveDataLogging();
             });
             services.AddIdentity<User, IdentityRole>().AddEntityFrameworkStores<AuthDbService>().AddDefaultTokenProviders();
-            
-            
+
+
 
 
             services.Configure<IdentityOptions>(options =>
@@ -166,10 +178,13 @@ namespace BookStore.Authentication
                 //... and tell Swagger to use those XML comments.
                 c.IncludeXmlComments(xmlPath);
             });
-            
+            services.AddAzureClients(builder =>
+            {
+                builder.AddBlobServiceClient(Configuration["ConnectionStrings:AzureBlobStorage"], preferMsi: true);
+            });
         }
 
-      
+
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IApiVersionDescriptionProvider provider)
         {
@@ -178,7 +193,7 @@ namespace BookStore.Authentication
                 app.UseDeveloperExceptionPage();
             }
 
-          
+
             app.UseHttpsRedirection();
             app.UseSwagger();
             app.UseSwaggerUI(setupAction =>
@@ -186,7 +201,7 @@ namespace BookStore.Authentication
                 foreach (var description in provider.ApiVersionDescriptions)
                 {
                     setupAction.SwaggerEndpoint(
-                        $"/swagger/{description.GroupName}/swagger.json",description.GroupName);
+                        $"/swagger/{description.GroupName}/swagger.json", description.GroupName);
                 }
                 setupAction.RoutePrefix = string.Empty;
             });
@@ -199,6 +214,21 @@ namespace BookStore.Authentication
             {
                 endpoints.MapControllers();
             });
+        }
+     
+    }
+    internal static class StartupExtensions
+    {
+        public static IAzureClientBuilder<BlobServiceClient, BlobClientOptions> AddBlobServiceClient(this AzureClientFactoryBuilder builder, string serviceUriOrConnectionString, bool preferMsi)
+        {
+            if (preferMsi && Uri.TryCreate(serviceUriOrConnectionString, UriKind.Absolute, out Uri serviceUri))
+            {
+                return builder.AddBlobServiceClient(serviceUri);
+            }
+            else
+            {
+                return builder.AddBlobServiceClient(serviceUriOrConnectionString);
+            }
         }
     }
 }
