@@ -1,4 +1,5 @@
-﻿using Bookstore.Model;
+﻿using Bookstore.App.Service.Interface;
+using Bookstore.Model;
 using Bookstore.Model.DTO.Author;
 using Bookstore.Model.DTO.Book;
 using Bookstore.Service.Interface;
@@ -17,10 +18,10 @@ namespace Bookstore.Controllers
     public class BooksController : ControllerBase
     {
         readonly IBook _bookDb;
-        readonly IBookAuthor _bookAuthor;
-        public BooksController(IBook _bookDb, IBookAuthor _bookAuthor)
+        readonly IBlob _blob;
+        public BooksController(IBook _bookDb, IBlob _blob)
         {
-            this._bookAuthor = _bookAuthor;
+            this._blob = _blob;
             this._bookDb = _bookDb;
         }
 
@@ -42,7 +43,7 @@ namespace Bookstore.Controllers
             return Ok(mappedBook);
         } 
 
-        [HttpGet("search")]
+        [HttpGet("names/search")]
         public ActionResult<IEnumerable<BooksDTO>> SearchBooksByName([FromQuery]string name)
         {
             IEnumerable<Book> books = _bookDb.GetBookByName(name);
@@ -51,7 +52,7 @@ namespace Bookstore.Controllers
 
         }
 
-        [HttpGet("search/{isbn}")]
+        [HttpGet("details/search")]
         public async Task<ActionResult<BookDTO>> SearchBookByISBN(string isbn)
         {
             Book book = await _bookDb.GetBookByISBN(isbn);
@@ -59,7 +60,7 @@ namespace Bookstore.Controllers
             return Ok(mappedBook);
         }
 
-        [HttpGet("search/category")]
+        [HttpGet("categories/search")]
         public  ActionResult<IEnumerable<BooksDTO>> SearchBookByFaculty([FromQuery]string faculty)
         {
             IEnumerable<Book> books = _bookDb.GetBooksByFaculty(faculty);
@@ -67,7 +68,7 @@ namespace Bookstore.Controllers
             return Ok(mappedBooks);
         }
 
-        [HttpGet("search/category")]
+        [HttpGet("categories/search")]
         public ActionResult<IEnumerable<BooksDTO>> SearchBookByFaculty([FromQuery] string department, [FromQuery]int level)
         {
             IEnumerable<Book> books = _bookDb.GetBooksByLevel(department,level);
@@ -75,7 +76,7 @@ namespace Bookstore.Controllers
             return Ok(mappedBooks);
         }
 
-        [HttpGet("search/author")]
+        [HttpGet("authors/search")]
         public ActionResult<IEnumerable<BooksDTO>> SearchByAuthor([FromQuery] string author)
         {
             IEnumerable<Book> books = _bookDb.GetBooksByAuthor(author);
@@ -84,17 +85,25 @@ namespace Bookstore.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> AddBook(BookCreate newBook)
+        public async Task<IActionResult> AddBook([FromForm]BookCreate newBook)
         {
+            string bookLink = await _blob.Upload(newBook.BookLink);
+            string picture = await _blob.Upload(newBook.Picture);
             Book book = newBook.Adapt<Book>();
+            book.BookLink = bookLink;
+            book.Picture = picture;
             await _bookDb.AddBook(book);
             return Ok("Created Successfully");
         }
 
         [HttpPut("{bookId}")]
-        public async Task<IActionResult> UpdateBook(Guid bookId, BookUpdate updatedBook)
+        public async Task<IActionResult> UpdateBook(Guid bookId,[FromForm] BookUpdate updatedBook)
         {
+            string bookLink = await _blob.Upload(updatedBook.BookLink);
+            string picture = await _blob.Upload(updatedBook.Picture);
             Book book = updatedBook.Adapt<Book>();
+            book.BookLink = bookLink;
+            book.Picture = picture;
             Book currentBook = await _bookDb.GetBookById(bookId);
             if(currentBook == null)
             {
