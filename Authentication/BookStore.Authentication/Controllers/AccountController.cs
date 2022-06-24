@@ -37,10 +37,10 @@ namespace BookStore.Authentication.Controllers
         readonly EmailService emailService;
         readonly Credentials _credentials;
         readonly IProfile _profile;
-
+        readonly MappingService mappingService;
 
         public AccountController(SignInManager<User> signInManager, UserManager<User> userManager, 
-            IPasswordHasher<User> passwordHasher, EmailService emailService, Credentials _credentials, IProfile _profile)
+            IPasswordHasher<User> passwordHasher, EmailService emailService, Credentials _credentials, IProfile _profile, MappingService mappingService)
         {
             this.userManager = userManager;
             this.passwordHasher = passwordHasher;
@@ -48,6 +48,7 @@ namespace BookStore.Authentication.Controllers
             this.emailService = emailService;
             this._credentials = _credentials;
             this._profile = _profile;
+            this.mappingService = mappingService;
         }
 
 
@@ -69,7 +70,8 @@ namespace BookStore.Authentication.Controllers
         {
             try
             {
-                User user = newUser.Adapt<User>();
+                User user = newUser.Adapt<User>(mappingService.UserConfig());
+                
                 UserProfile profile = newUser.Adapt<UserProfile>();
                 if (newUser.Password.Equals(newUser.ReTypePassword))
                 {
@@ -79,7 +81,7 @@ namespace BookStore.Authentication.Controllers
                     {
                         await userManager.AddToRoleAsync(user, "Student");
                         await userManager.AddClaimAsync(user, new Claim(ClaimTypes.Role, "Student"));
-                        await userManager.AddClaimAsync(user, new Claim(ClaimTypes.Name, $"{user.Email}"));
+                        await userManager.AddClaimAsync(user, new Claim(ClaimTypes.Name, $"{user.UserName}"));
                         await _profile.AddUserProfile(profile);
 
                         string token = await EmailConfirmationToken(user);
@@ -109,9 +111,116 @@ namespace BookStore.Authentication.Controllers
             }
 
         }
+        ///<param name="newUser">
+        ///an object to sign up a user
+        ///</param>
+        /// <summary>
+        /// Sign up a new Admin
+        /// </summary>
+        /// 
+        /// <returns>201 response</returns>
+        [ProducesResponseType(StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [Produces("application/json")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme,Roles ="Admin")]
+        [HttpPost("admin/signup")]
+        public async Task<ActionResult> AdminSignUp(AdminCreate newUser)
+        {
+            try
+            {
+                User user = newUser.Adapt<User>(mappingService.AdminConfig());
+                if (newUser.Password.Equals(newUser.ReTypePassword))
+                {
+                    user.UserName = newUser.Email;
+                    IdentityResult identity = await userManager.CreateAsync(user, user.PasswordHash);
+                    if (identity.Succeeded)
+                    {
+                       var x =  await userManager.AddToRoleAsync(user, "Admin");
+                        var y =  await userManager.AddClaimAsync(user, new Claim(ClaimTypes.Role, "Admin"));
+                        var s = await userManager.AddClaimAsync(user, new Claim(ClaimTypes.Name, $"{user.Email}"));
 
+                        string token = await EmailConfirmationToken(user);
+                        Mail newMail = new Mail
+                        {
+                            To = user.Email,
+                            Text = $"Verify your BookStore Student Email using this token {token}"
+                        };
 
+                        bool isSuccessful = await emailService.SendSimpleMessage(newMail);
+                        if (isSuccessful)
+                        {
+                            return this.StatusCode(StatusCodes.Status201Created, $"Welcome,Admin verify your email");
+                        }
+                        return BadRequest();
+                    }
+                    else
+                    {
+                        return BadRequest(identity.Errors);
+                    }
+                }
+                return this.StatusCode(StatusCodes.Status400BadRequest, "Password not equal,retype password");
+            }
+            catch (Exception e)
+            {
 
+                return BadRequest(e.Message);
+            }
+
+        }
+
+        ///<param name="user">
+        ///an object to login
+        ///</param>
+        /// <summary>
+        ///Login Admin
+        /// </summary>
+        /// 
+        /// <returns>200 response</returns>
+
+        //To generate the token to reset password
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [AllowAnonymous]
+        [Produces("application/json")]
+        [HttpPost("admin/login")]
+        public async Task<ActionResult> Login(AdminLogin user)
+        {
+            try
+            {
+                User currentUser = await userManager.FindByEmailAsync(user.Email);
+                if (currentUser == null)
+                {
+                    return NotFound("username or password is not correct");
+                }
+
+                //This verfies the user password by using IPasswordHasher interface
+                PasswordVerificationResult passwordVerifyResult = passwordHasher.VerifyHashedPassword(currentUser, currentUser.PasswordHash, user.Password);
+                if (passwordVerifyResult.ToString() == "Success")
+                {
+
+                    var claims = await userManager.GetClaimsAsync(currentUser);
+                    var identity = new ClaimsIdentity(claims, JwtBearerDefaults.AuthenticationScheme);
+
+                    await signInManager.SignInWithClaimsAsync(currentUser, null, claims);
+
+                    var signingCredentials = _credentials.GetSigningCredentials();
+                    var tokenOptions = _credentials.GenerateTokenOptions(signingCredentials, claims);
+                    var token = new JwtSecurityTokenHandler().WriteToken(tokenOptions);
+
+                    return Ok(token);
+                }
+
+                return BadRequest("username or password is not correct");
+            }
+            catch (Exception e)
+            {
+
+                return BadRequest(e.Message);
+            }
+
+        }
 
         ///<param name="email">
         ///\a user's email
@@ -177,8 +286,7 @@ namespace BookStore.Authentication.Controllers
         {
             try
             {
-                User logindetails = user.Adapt<User>();
-                User currentUser = await GetUser(logindetails.Email);
+                User currentUser = await GetUser(user.Username);
                 if (currentUser == null)
                 {
                     return NotFound("username or password is not correct");
@@ -188,8 +296,8 @@ namespace BookStore.Authentication.Controllers
                 PasswordVerificationResult passwordVerifyResult = passwordHasher.VerifyHashedPassword(currentUser, currentUser.PasswordHash, user.Password);
                 if (passwordVerifyResult.ToString() == "Success")
                 {
-                   
-                    var claims = new List<Claim> { new Claim(ClaimTypes.Name, user.Email), new Claim(ClaimTypes.Role,"Student") };
+
+                    var claims = await userManager.GetClaimsAsync(currentUser);
                     var identity = new ClaimsIdentity(claims,JwtBearerDefaults.AuthenticationScheme);
 
                     await signInManager.SignInWithClaimsAsync(currentUser, null, claims);
@@ -244,9 +352,9 @@ namespace BookStore.Authentication.Controllers
         }
 
         [NonAction]
-        private async Task<User> GetUser(string email)
+        private async Task<User> GetUser(string username)
         {
-            return await userManager.FindByEmailAsync(email);
+            return await userManager.FindByNameAsync(username);
         }
 
     }

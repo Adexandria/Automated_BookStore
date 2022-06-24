@@ -32,7 +32,7 @@ namespace Authentication.Infrastructure.Service
             var secret = new SymmetricSecurityKey(key);
             return new SigningCredentials(secret, SecurityAlgorithms.HmacSha256);
         }
-        public JwtSecurityToken GenerateTokenOptions(SigningCredentials signingCredentials, List<Claim> claims)
+        public JwtSecurityToken GenerateTokenOptions(SigningCredentials signingCredentials, IList<Claim> claims)
         {
             var _jwtSettings = GetSection();
             var tokenOptions = new JwtSecurityToken(

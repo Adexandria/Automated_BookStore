@@ -50,12 +50,16 @@ namespace BookStore.Authentication
             var migrationsAssembly = typeof(Startup).GetTypeInfo().Assembly.GetName().Name;
             var jwtSettings = Configuration.GetSection("JwtSettings");
 
+            services.AddSingleton<MappingService>();
             services.AddScoped<IFaculty, FacultyRepository>();
             services.AddScoped<IBlob, BlobRepository>();
             services.AddScoped<IBook, BookRepository>();
             services.AddScoped<IAuthor, AuthorRepository>();
             services.AddScoped<IOrder, OrderRepository>();
             services.AddScoped<ICart, CartRepository>();
+            services.AddScoped<IProfile, ProfileRepository>();
+            services.AddScoped<IAddress, AddressRepository>();
+            services.AddScoped<ICategory, CategoryRepository>();
             services.AddScoped<IBookAuthor, BookAuthorRepository>();
             services.AddScoped<EmailService>();
             services.AddControllers();
