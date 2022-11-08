@@ -15,3 +15,18 @@ variables:
 steps:
 - script: dotnet build --configuration $(buildConfiguration)
   displayName: 'dotnet build $(buildConfiguration)'
+
+- task: DotNetCoreCLI@2    
+  displayName: Dotnet Publish
+  inputs:
+    command: publish
+    arguments: '--configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory)'
+    zipAfterPublish: True
+
+
+- task: PublishBuildArtifacts@1    
+  displayName: 'Publish Artifact: eHSAT API'
+  inputs:
+    PathtoPublish: '$(build.artifactstagingdirectory)'
+    ArtifactName: 'ehsat-api'
+    publishLocation: 'Container'
