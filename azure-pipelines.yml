@@ -23,10 +23,5 @@ steps:
     includePreviewVersions: true # Required for preview versions
 - task: DotNetCoreCLI@2
   inputs:
-    command: 'restore'
-    projects: '**/*.sln'
-    feedsToUse: 'config'
-- task: DotNetCoreCLI@2
-  inputs:
     command: 'build'
     projects: '**/*.csproj'
