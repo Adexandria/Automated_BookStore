@@ -80,8 +80,6 @@ namespace BookStore.Authentication.Controllers
                     if (identity.Succeeded)
                     {
                         await userManager.AddToRoleAsync(user, "Student");
-                        await userManager.AddClaimAsync(user, new Claim(ClaimTypes.Role, "Student"));
-                        await userManager.AddClaimAsync(user, new Claim(ClaimTypes.Name, $"{user.UserName}"));
                         await _profile.AddUserProfile(profile);
 
                         string token = await EmailConfirmationToken(user);
@@ -111,6 +109,7 @@ namespace BookStore.Authentication.Controllers
             }
 
         }
+
         ///<param name="newUser">
         ///an object to sign up a user
         ///</param>
@@ -123,7 +122,7 @@ namespace BookStore.Authentication.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [Produces("application/json")]
-        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme,Roles ="Admin")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
         [HttpPost("admin/signup")]
         public async Task<ActionResult> AdminSignUp(AdminCreate newUser)
         {
@@ -136,8 +135,8 @@ namespace BookStore.Authentication.Controllers
                     IdentityResult identity = await userManager.CreateAsync(user, user.PasswordHash);
                     if (identity.Succeeded)
                     {
-                       var x =  await userManager.AddToRoleAsync(user, "Admin");
-                        var y =  await userManager.AddClaimAsync(user, new Claim(ClaimTypes.Role, "Admin"));
+                        var x = await userManager.AddToRoleAsync(user, "Admin");
+                        var y = await userManager.AddClaimAsync(user, new Claim(ClaimTypes.Role, "Admin"));
                         var s = await userManager.AddClaimAsync(user, new Claim(ClaimTypes.Name, $"{user.Email}"));
 
                         string token = await EmailConfirmationToken(user);
@@ -168,60 +167,6 @@ namespace BookStore.Authentication.Controllers
             }
 
         }
-
-        ///<param name="user">
-        ///an object to login
-        ///</param>
-        /// <summary>
-        ///Login Admin
-        /// </summary>
-        /// 
-        /// <returns>200 response</returns>
-
-        //To generate the token to reset password
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [AllowAnonymous]
-        [Produces("application/json")]
-        [HttpPost("admin/login")]
-        public async Task<ActionResult> Login(AdminLogin user)
-        {
-            try
-            {
-                User currentUser = await userManager.FindByEmailAsync(user.Email);
-                if (currentUser == null)
-                {
-                    return NotFound("username or password is not correct");
-                }
-
-                //This verfies the user password by using IPasswordHasher interface
-                PasswordVerificationResult passwordVerifyResult = passwordHasher.VerifyHashedPassword(currentUser, currentUser.PasswordHash, user.Password);
-                if (passwordVerifyResult.ToString() == "Success")
-                {
-
-                    var claims = await userManager.GetClaimsAsync(currentUser);
-                    var identity = new ClaimsIdentity(claims, JwtBearerDefaults.AuthenticationScheme);
-
-                    await signInManager.SignInWithClaimsAsync(currentUser, null, claims);
-
-                    var signingCredentials = _credentials.GetSigningCredentials();
-                    var tokenOptions = _credentials.GenerateTokenOptions(signingCredentials, claims);
-                    var token = new JwtSecurityTokenHandler().WriteToken(tokenOptions);
-
-                    return Ok(token);
-                }
-
-                return BadRequest("username or password is not correct");
-            }
-            catch (Exception e)
-            {
-
-                return BadRequest(e.Message);
-            }
-
-        }
-
         ///<param name="email">
         ///\a user's email
         ///</param>
@@ -297,12 +242,12 @@ namespace BookStore.Authentication.Controllers
                 if (passwordVerifyResult.ToString() == "Success")
                 {
 
-                    var claims = await userManager.GetClaimsAsync(currentUser);
-                    var identity = new ClaimsIdentity(claims,JwtBearerDefaults.AuthenticationScheme);
+                    var claims = await _credentials.GetClaims(currentUser);
 
                     await signInManager.SignInWithClaimsAsync(currentUser, null, claims);
 
                     var signingCredentials = _credentials.GetSigningCredentials();
+                   
                     var tokenOptions = _credentials.GenerateTokenOptions(signingCredentials, claims);
                     var token = new JwtSecurityTokenHandler().WriteToken(tokenOptions);
 

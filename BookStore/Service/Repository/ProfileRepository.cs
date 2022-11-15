@@ -20,7 +20,7 @@ namespace Bookstore.Service.Repository
 
         public async Task<UserProfile> GetProfile(Guid profileId)
         {
-            return await db.UserProfiles.Where(s => s.ProfileId == profileId).Include(s=>s.User).FirstOrDefaultAsync();
+            return await db.UserProfiles.Where(s => s.ProfileId == profileId).FirstOrDefaultAsync();
         }
         public async Task<int> AddUserProfile(UserProfile profile)
         {

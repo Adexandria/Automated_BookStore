@@ -8,11 +8,12 @@ using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace Bookstore.Controllers
 {
-    [Route("api/{userId}/Order/{orderId}/[controller]")]
+    [Route("api/Order/{orderId}/[controller]")]
     [ApiController]
     public class CartsController : ControllerBase
     {
@@ -33,13 +34,14 @@ namespace Bookstore.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> AddToCart(Guid userId,Guid orderId, CartCreate newCart)
+        public async Task<IActionResult> AddToCart(Guid orderId, CartCreate newCart)
         {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             OrderCart cart = newCart.Adapt<OrderCart>();
 
-            if (await _orderDb.CheckUserOrder(userId))
+            if (await _orderDb.CheckUserOrder(Guid.Parse(userId)))
             {
-                Order order = new OrderCreate { ProfileId = userId }.Adapt<Order>();
+                Order order = new OrderCreate { ProfileId = Guid.Parse(userId) }.Adapt<Order>();
                 await _orderDb.AddOrder(order);
             }
             

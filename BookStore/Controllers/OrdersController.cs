@@ -8,11 +8,12 @@ using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace Bookstore.Controllers
 {
-    [Route("api/{userId}/[controller]")]
+    [Route("api/[controller]")]
     [ApiController]
     public class OrdersController : ControllerBase
     {
@@ -24,9 +25,10 @@ namespace Bookstore.Controllers
             this._cartDb = _cartDb;
         }
         [HttpGet]
-        public ActionResult<IEnumerable<OrdersDTO>> GetUserOrders(Guid userId)
+        public ActionResult<IEnumerable<OrdersDTO>> GetUserOrders()
         {
-            IEnumerable<Order> orders = _orderDb.GetUserOrders(userId);
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            IEnumerable<Order> orders = _orderDb.GetUserOrders(Guid.Parse(userId));
             IEnumerable<OrderDTO> mappedOrders = orders.Adapt<IEnumerable<OrderDTO>>();
             return Ok(mappedOrders);
         }

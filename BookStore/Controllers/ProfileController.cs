@@ -8,11 +8,12 @@ using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace Bookstore.Controllers
 {
-    [Route("api/{userId}/[controller]")]
+    [Route("api/[controller]")]
     [ApiController]
     [Authorize]
     public class ProfileController : ControllerBase
@@ -24,9 +25,10 @@ namespace Bookstore.Controllers
             this._profileDb = _profileDb;
         }
         [HttpGet]
-        public async Task<ActionResult<ProfileDTO>> GetUserProfile(Guid userId)
+        public async Task<ActionResult<ProfileDTO>> GetUserProfile()
         {
-            UserProfile user = await _profileDb.GetProfile(userId);
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            UserProfile user = await _profileDb.GetProfile(Guid.Parse(userId));
             if (user == null)
             {
                 return NotFound("This user doesn't exist");
@@ -36,10 +38,11 @@ namespace Bookstore.Controllers
         }
 
         [HttpPut]
-        public async Task<IActionResult> UpdateUserProfile(Guid userId,ProfileUpdate updatedProfile)
+        public async Task<IActionResult> UpdateUserProfile(ProfileUpdate updatedProfile)
         {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-            UserProfile currentUser = await _profileDb.GetProfile(userId);
+            UserProfile currentUser = await _profileDb.GetProfile(Guid.Parse(userId));
             if (currentUser == null)
             {
                 return NotFound("This user doesn't exist");

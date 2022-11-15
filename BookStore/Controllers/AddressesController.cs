@@ -7,11 +7,12 @@ using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace Bookstore.Controllers
 {
-    [Route("api/{userId}/[controller]")]
+    [Route("api/[controller]")]
     [ApiController]
     public class AddressesController : ControllerBase
     {
@@ -30,35 +31,39 @@ namespace Bookstore.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> AddUserAddress(Guid userId,AddressCreate newAddress)
+        public async Task<IActionResult> AddUserAddress(AddressCreate newAddress)
         {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             Address address = newAddress.Adapt<Address>();
-            await _addressDb.AddAddress(address, userId);
+            await _addressDb.AddAddress(address, Guid.Parse(userId));
             return Ok("Created Successfully");
 
         }
         [HttpPut("{addressId}")]
-        public async Task<IActionResult> UpdateUserAddress(Guid userId,Guid addressId,AddressUpdate updatedAddress)
+        public async Task<IActionResult> UpdateUserAddress(Guid addressId,AddressUpdate updatedAddress)
         {
-            Address currentAddress = await _addressDb.GetAddress(addressId,userId);
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            
+            Address currentAddress = await _addressDb.GetAddress(addressId, Guid.Parse(userId));
             if(currentAddress == null)
             {
                 return NotFound();
             }
             Address address = updatedAddress.Adapt<Address>();
-            await _addressDb.UpdateAddress(address,userId);
+            await _addressDb.UpdateAddress(address, Guid.Parse(userId));
             return Ok("Currently Successfully");
         }
 
         [HttpDelete("{addressId}")]
-        public async Task<IActionResult> DeleteUserAddress(Guid userId,Guid addressId)
+        public async Task<IActionResult> DeleteUserAddress(Guid addressId)
         {
-            Address currentAddress = await _addressDb.GetAddress(addressId, userId);
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            Address currentAddress = await _addressDb.GetAddress(addressId, Guid.Parse(userId));
             if (currentAddress == null)
             {
                 return NotFound();
             }
-            await _addressDb.DeleteAddressById(addressId, userId);
+            await _addressDb.DeleteAddressById(addressId, Guid.Parse(userId));
             return Ok("Deleted Successfully");
         }
     }

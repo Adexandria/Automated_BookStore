@@ -11,7 +11,8 @@ namespace Authentication.Infrastructure.Service
     {
         public TypeAdapterConfig UserConfig()
         {
-            var map = TypeAdapterConfig<SignUpCreate, User>.NewConfig().Map(dest => dest.PasswordHash, src => src.Password);
+            var map = TypeAdapterConfig<SignUpCreate, User>.NewConfig().Map(dest => dest.PasswordHash, src => src.Password)
+                .Map(x => x.Email, src => src.StudentEmail);
                     return map.Config;
         }
         public TypeAdapterConfig AdminConfig()

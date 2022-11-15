@@ -11,11 +11,12 @@ using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace Bookstore.App.Controllers
 {
-    [Route("api/{userId}/Orders/{orderId}/[controller]")]
+    [Route("api/Orders/{orderId}/[controller]")]
     [ApiController]
     [Authorize]
     public class PaymentController : ControllerBase
@@ -43,13 +44,14 @@ namespace Bookstore.App.Controllers
         /// 
         /// <returns>A string status</returns>
         [HttpPost]
-        public async Task<ActionResult> PayCharge(Guid userId, Guid orderId)
+        public async Task<ActionResult> PayCharge(Guid orderId)
         {
             try
             {
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
                 _service.GetSecrets();
 
-                ProfileDTO currentUser = _profileDb.GetProfile(userId).Result.Adapt<ProfileDTO>();
+                ProfileDTO currentUser = _profileDb.GetProfile(Guid.Parse(userId)).Result.Adapt<ProfileDTO>();
                 List<OrderCart> carts = _cartDb.GetOrdersCart(orderId).ToList();
 
                 int price = _service.GetPrice(carts);
