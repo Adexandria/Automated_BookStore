@@ -4,6 +4,7 @@ using Bookstore.Model.DTO.Profile;
 using Bookstore.Model.Payment;
 using Bookstore.Service.Interface;
 using Mapster;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -18,7 +19,7 @@ namespace Bookstore.App.Controllers
 {
     [Route("api/Orders/{orderId}/[controller]")]
     [ApiController]
-    [Authorize]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public class PaymentController : ControllerBase
     {
         readonly ICart _cartDb;

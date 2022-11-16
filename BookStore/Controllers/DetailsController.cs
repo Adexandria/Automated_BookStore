@@ -25,7 +25,7 @@ namespace Bookstore.Controllers
         {
             BookDetail bookDetail = newDetail.Adapt<BookDetail>();
             await _detailDb.AddDetail(bookDetail);
-            return Ok("Created");
+            return Ok(bookDetail.DetailId);
         }
 
         [HttpPut("{detailId}")]

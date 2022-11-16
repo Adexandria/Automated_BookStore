@@ -28,7 +28,7 @@ namespace Bookstore.Controllers
         {
             BookCategory category = newCategory.Adapt<BookCategory>();
             await _categoryDb.AddCategory(category);
-            return Ok("Successful");
+            return Ok(category);
         } 
 
         [HttpPut("{categoryId}")]

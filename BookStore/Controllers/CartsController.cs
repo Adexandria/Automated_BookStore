@@ -3,6 +3,7 @@ using Bookstore.Model.DTO.Cart;
 using Bookstore.Model.DTO.Order;
 using Bookstore.Service.Interface;
 using Mapster;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -16,7 +17,7 @@ namespace Bookstore.Controllers
 {
     [Route("api/Order/{orderId}/[controller]")]
     [ApiController]
-    [Authorize]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public class CartsController : ControllerBase
     {
         readonly ICart _cartDb;
@@ -48,7 +49,7 @@ namespace Bookstore.Controllers
             }
             
             await _cartDb.AddToCart(orderId, cart);
-            return Ok("Created Successfully");
+            return Ok(cart.CartId);
         }
         [HttpPut("{bookId}")]
         public async Task<IActionResult> UpdateItemCart(Guid orderId,Guid bookId,CartUpdate updatedCart)

@@ -15,6 +15,8 @@ namespace Bookstore.Service.Interface
         IEnumerable<Book> GetBooksByFaculty(string faculty);
         IEnumerable<Book> GetBooksByLevel(string department, int level);
         IEnumerable<Book> GetBooksByAuthor(string author);
+        Task<Guid> GetCategoryByDepartmentAndLevel(string department, int level);
+        Task<Guid> GetDetailByISBN(string isbn);
         Task<int> AddBook(Book book);
         Task<int> UpdateBook(Book updatedBook);
         Task<int> DeleteBookById(Guid bookId);

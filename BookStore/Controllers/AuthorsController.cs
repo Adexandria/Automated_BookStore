@@ -2,6 +2,7 @@
 using Bookstore.Model.DTO.Author;
 using Bookstore.Service.Interface;
 using Mapster;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -14,7 +15,7 @@ namespace Bookstore.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize(Roles = "Admin")]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
     public class AuthorsController : ControllerBase
     {
         readonly IAuthor _authorDb;
@@ -28,7 +29,7 @@ namespace Bookstore.Controllers
         {
             Author author = newAuthor.Adapt<Author>();
             await _authorDb.AddAuthor(author);
-            return Ok("Successful");
+            return Ok(author.AuthorId);
         }
 
         [HttpPut("{authorId}")]

@@ -61,6 +61,7 @@ namespace BookStore.Authentication
             services.AddScoped<IAddress, AddressRepository>();
             services.AddScoped<ICategory, CategoryRepository>();
             services.AddScoped<IBookAuthor, BookAuthorRepository>();
+            services.AddScoped<IDetail, DetailRepository>();
             services.AddScoped<EmailService>();
             services.AddControllers();
             services.AddScoped<Credentials>();
@@ -80,8 +81,9 @@ namespace BookStore.Authentication
                 {
                     ValidateIssuer = false,
                     ValidateAudience = false,
-                    ValidateLifetime = true,
+                    ValidateLifetime = false,
                     ValidateIssuerSigningKey = true,
+                    ClockSkew = TimeSpan.Zero,
                     ValidIssuer = jwtSettings.GetSection("validIssuer").Value,
                     ValidAudience = jwtSettings.GetSection("validAudience").Value,
                     AuthenticationType = "Bearer",

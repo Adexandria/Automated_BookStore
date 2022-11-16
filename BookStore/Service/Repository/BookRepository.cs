@@ -41,7 +41,7 @@ namespace Bookstore.Service.Repository
         }
         public async Task<Book> GetBookById(Guid bookId)
         {
-            return await db.Books.Where(s => s.BookId == bookId).FirstOrDefaultAsync();
+            return await db.Books.Where(s => s.BookId == bookId).Include(s=>s.Detail).Include(s=>s.Category).FirstOrDefaultAsync();
         }
 
         public IEnumerable<Author> GetAuthorByBookId(Guid bookId)
@@ -50,13 +50,13 @@ namespace Bookstore.Service.Repository
         }
         public async Task<Book> GetBookByISBN(string isbn)
         {
-            Guid detailId = await db.BookDetails.Where(s => s.ISBN13 == isbn).Select(s => s.DetailId).FirstOrDefaultAsync();
+            Guid detailId = await db.BookDetails.Where(s => s.ISBN13.ToLower() == isbn.ToLower()).Select(s => s.DetailId).FirstOrDefaultAsync();
             return await db.Books.Where(s => s.DetailId == detailId).FirstOrDefaultAsync();
         }
 
         public IEnumerable<Book> GetBookByName(string bookName)
         {
-            return db.Books.Where(s => s.Name == bookName).OrderBy(s => s.BookId);
+            return db.Books.Where(s => s.Name.ToLower() == bookName.ToLower()).OrderBy(s => s.BookId);
         }
 
         public IEnumerable<Book> GetBooksByAuthor(string author)
@@ -66,12 +66,12 @@ namespace Bookstore.Service.Repository
 
         public IEnumerable<Book> GetBooksByFaculty(string faculty)
         {
-            return db.Books.Include(s => s.Category).Where(s => s.Category.Faculty == faculty);
+            return db.Books.Include(s => s.Category).Where(s => s.Category.Faculty.ToLower() == faculty.ToLower());
         }
 
         public IEnumerable<Book> GetBooksByLevel(string department, int level)
         {
-            return db.Books.Include(s => s.Category).Where(s => s.Category.Department == department).Where(s=>s.Category.Level == level);
+            return db.Books.Include(s => s.Category).Where(s => s.Category.Department.ToLower() == department.ToLower()).Where(s=>s.Category.Level == level);
         }
 
         public async Task<int> UpdateBook(Book updatedBook)
@@ -112,6 +112,14 @@ namespace Bookstore.Service.Repository
             return await db.SaveChangesAsync();
         }
 
+        public async Task<Guid> GetDetailByISBN(string isbn)
+        {
+            return await db.BookDetails.Where(s => s.ISBN13.ToLower() == isbn.ToLower()).Select(s=>s.DetailId).FirstOrDefaultAsync();
+        }
         
+        public async Task<Guid> GetCategoryByDepartmentAndLevel(string department, int level)
+        {
+            return await db.BookCategories.Where(s => s.Level == level && s.Department.ToLower() == department.ToLower()).Select(s => s.CategoryId).FirstOrDefaultAsync();
+        }
     }
 }

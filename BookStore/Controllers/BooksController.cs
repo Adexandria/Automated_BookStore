@@ -4,6 +4,7 @@ using Bookstore.Model.DTO.Author;
 using Bookstore.Model.DTO.Book;
 using Bookstore.Service.Interface;
 using Mapster;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -40,7 +41,7 @@ namespace Bookstore.Controllers
             Book book = await _bookDb.GetBookById(bookId);
             IEnumerable<AuthorDTO> authors = _bookDb.GetAuthorByBookId(bookId).Adapt<IEnumerable<AuthorDTO>>();
             BookDTO mappedBook = book.Adapt<BookDTO>();
-            mappedBook = authors.Adapt<BookDTO>();
+            mappedBook.Author = authors.Adapt<IEnumerable<AuthorDTO>>();
             return Ok(mappedBook);
         } 
 
@@ -94,11 +95,13 @@ namespace Bookstore.Controllers
             Book book = newBook.Adapt<Book>();
             book.BookLink = bookLink;
             book.Picture = picture;
+            book.CategoryId = await _bookDb.GetCategoryByDepartmentAndLevel(newBook.Department, newBook.Level);
+            book.DetailId = await _bookDb.GetDetailByISBN(newBook.ISBN);
             await _bookDb.AddBook(book);
-            return Ok("Created Successfully");
+            return Ok(book.BookId);
         }
 
-        [Authorize(Roles = "Admin")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
         [HttpPut("{bookId}")]
         public async Task<IActionResult> UpdateBook(Guid bookId,[FromForm] BookUpdate updatedBook)
         {
@@ -116,7 +119,7 @@ namespace Bookstore.Controllers
             return Ok("Updated Successfully");
         }
 
-        [Authorize(Roles = "Admin")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
         [HttpDelete("{bookId}")]
         public async Task<IActionResult> DeleteBook(Guid bookId)
         {

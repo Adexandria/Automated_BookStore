@@ -2,6 +2,7 @@
 using Bookstore.Model.DTO.Address;
 using Bookstore.Service.Interface;
 using Mapster;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -13,9 +14,9 @@ using System.Threading.Tasks;
 
 namespace Bookstore.Controllers
 {
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme,Roles = "Student")]
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize]
     public class AddressesController : ControllerBase
     {
         readonly IAddress _addressDb;
@@ -25,9 +26,11 @@ namespace Bookstore.Controllers
         }
 
         [HttpGet]
-        public  ActionResult<IEnumerable<AddressDTO>> GetUserAddress(Guid userId)
+        public  ActionResult<IEnumerable<AddressDTO>> GetUserAddress()
         {
-            IEnumerable<Address> addresses = _addressDb.GetAddressByProfileId(userId);
+
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            IEnumerable<Address> addresses = _addressDb.GetAddressByProfileId(Guid.Parse(userId));
             IEnumerable<AddressDTO> mappedAddresses = addresses.Adapt<IEnumerable<AddressDTO>>();
             return Ok(mappedAddresses);
         }
@@ -38,7 +41,7 @@ namespace Bookstore.Controllers
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             Address address = newAddress.Adapt<Address>();
             await _addressDb.AddAddress(address, Guid.Parse(userId));
-            return Ok("Created Successfully");
+            return Ok(address.AddressId);
 
         }
         [HttpPut("{addressId}")]
@@ -56,6 +59,7 @@ namespace Bookstore.Controllers
             return Ok("Currently Successfully");
         }
 
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme,Roles ="Admin")]
         [HttpDelete("{addressId}")]
         public async Task<IActionResult> DeleteUserAddress(Guid addressId)
         {
