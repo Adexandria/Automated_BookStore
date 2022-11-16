@@ -80,7 +80,7 @@ namespace BookStore.Authentication.Controllers
                     if (identity.Succeeded)
                     {
                         await userManager.AddToRoleAsync(user, "Student");
-                        await _profile.AddUserProfile(profile);
+                        await _profile.AddUserProfile(profile,user.Id);
 
                         string token = await EmailConfirmationToken(user);
                         Mail newMail = new Mail {
@@ -135,9 +135,7 @@ namespace BookStore.Authentication.Controllers
                     IdentityResult identity = await userManager.CreateAsync(user, user.PasswordHash);
                     if (identity.Succeeded)
                     {
-                        var x = await userManager.AddToRoleAsync(user, "Admin");
-                        var y = await userManager.AddClaimAsync(user, new Claim(ClaimTypes.Role, "Admin"));
-                        var s = await userManager.AddClaimAsync(user, new Claim(ClaimTypes.Name, $"{user.Email}"));
+                        await userManager.AddToRoleAsync(user, "Admin");
 
                         string token = await EmailConfirmationToken(user);
                         Mail newMail = new Mail

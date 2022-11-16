@@ -2,6 +2,7 @@
 using Bookstore.Model.DTO.Detail;
 using Bookstore.Service.Interface;
 using Mapster;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Threading.Tasks;
@@ -10,6 +11,7 @@ namespace Bookstore.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize(Roles = "Admin")]
     public class DetailsController : ControllerBase
     {
         readonly IDetail _detailDb;

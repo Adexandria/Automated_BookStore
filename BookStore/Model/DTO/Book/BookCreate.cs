@@ -11,7 +11,7 @@ namespace Bookstore.Model.DTO.Book
         public string Name { get; set; }
         public int Price { get; set; }
         public IFormFile Picture { get; set; }
-        public IFormFile BookLink { get; set; }
+        public IFormFile Book { get; set; }
         public string Department { get; set; }
         public int Level { get; set; }
         public string ISBN { get; set; }

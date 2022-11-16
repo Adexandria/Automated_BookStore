@@ -32,10 +32,9 @@ namespace Bookstore.Test
                 Level = 4,
                 LastName ="Aderibigbe",
                 Faculty ="Science",
-                Id = "c0ad81a9-6197-4d67-bede-b70bc4a6a7d3"
 
             };
-            int insertedRow = _profile.AddUserProfile(profile).Result;
+            int insertedRow = _profile.AddUserProfile(profile,null).Result;
             Assert.Equal(1, insertedRow);
         }
 
@@ -58,7 +57,6 @@ namespace Bookstore.Test
                 Level = 3,
                 LastName = "Aderibigbe",
                 Faculty = "Science",
-                Id = "c0ad81a9-6197-4d67-bede-b70bc4a6a7d3"
 
             };
             int updatedRow = _profile.UpdateUserProfile(profile).Result;

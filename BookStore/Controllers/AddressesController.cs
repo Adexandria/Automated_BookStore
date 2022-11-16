@@ -2,6 +2,7 @@
 using Bookstore.Model.DTO.Address;
 using Bookstore.Service.Interface;
 using Mapster;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System;
@@ -14,6 +15,7 @@ namespace Bookstore.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class AddressesController : ControllerBase
     {
         readonly IAddress _addressDb;

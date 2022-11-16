@@ -14,7 +14,7 @@ namespace Bookstore.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize]
+    [Authorize(Roles = "Admin")]
     public class AuthorsController : ControllerBase
     {
         readonly IAuthor _authorDb;

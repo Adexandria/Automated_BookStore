@@ -3,6 +3,7 @@ using Bookstore.Model.DTO.Cart;
 using Bookstore.Model.DTO.Order;
 using Bookstore.Service.Interface;
 using Mapster;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System;
@@ -15,6 +16,7 @@ namespace Bookstore.Controllers
 {
     [Route("api/Order/{orderId}/[controller]")]
     [ApiController]
+    [Authorize]
     public class CartsController : ControllerBase
     {
         readonly ICart _cartDb;
@@ -61,6 +63,8 @@ namespace Bookstore.Controllers
             return Ok("updated successfully");
 
         }
+
+        [Authorize(Roles = "Admin")]
         [HttpDelete("{cartId}")]
         public async Task<IActionResult> DeleteCart(Guid orderId,Guid cartId)
         {

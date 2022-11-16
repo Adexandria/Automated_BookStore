@@ -2,6 +2,7 @@
 using Bookstore.Model.DTO.Category;
 using Bookstore.Service.Interface;
 using Mapster;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
@@ -12,6 +13,7 @@ namespace Bookstore.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize(Roles = "Admin")]
     public class CategoriesController :ControllerBase
     {
         readonly ICategory _categoryDb;

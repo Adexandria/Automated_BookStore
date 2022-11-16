@@ -22,11 +22,11 @@ namespace Bookstore.Service.Repository
         {
             return await db.UserProfiles.Where(s => s.ProfileId == profileId).FirstOrDefaultAsync();
         }
-        public async Task<int> AddUserProfile(UserProfile profile)
+        public async Task<int> AddUserProfile(UserProfile profile,string userId)
         {
             try
             {
-                profile.ProfileId = Guid.NewGuid();
+                profile.ProfileId = Guid.Parse(userId);
                 await db.UserProfiles.AddAsync(profile);
                 return await SaveChanges();
 
@@ -68,11 +68,6 @@ namespace Bookstore.Service.Repository
                 throw ex;
             }
         }
-        private async Task<UserProfile> GetProfileById(string userId)
-        {
-            return await db.UserProfiles.Where(s => s.Id == userId).FirstOrDefaultAsync();
-        }
-
         
         private async Task<int> SaveChanges()
         {

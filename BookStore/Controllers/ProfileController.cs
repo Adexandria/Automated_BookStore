@@ -34,6 +34,8 @@ namespace Bookstore.Controllers
                 return NotFound("This user doesn't exist");
             }
             ProfileDTO mappedProfile = user.Adapt<ProfileDTO>();
+            var userEmail = User.FindFirstValue(ClaimTypes.Email);
+            mappedProfile.Email = userEmail;
             return Ok(mappedProfile);
         }
 
@@ -48,7 +50,6 @@ namespace Bookstore.Controllers
                 return NotFound("This user doesn't exist");
             }
             UserProfile user = updatedProfile.Adapt<UserProfile>();
-            user.Id = currentUser.Id;
             user.ProfileId = currentUser.ProfileId;
             await _profileDb.UpdateUserProfile(user);
             return Ok("Updated Successfully");

@@ -3,6 +3,7 @@ using Bookstore.Model.DTO.Cart;
 using Bookstore.Model.DTO.Order;
 using Bookstore.Service.Interface;
 using Mapster;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System;
@@ -15,6 +16,7 @@ namespace Bookstore.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class OrdersController : ControllerBase
     {
         readonly IOrder _orderDb;

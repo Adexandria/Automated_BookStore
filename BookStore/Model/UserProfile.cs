@@ -19,8 +19,7 @@ namespace Bookstore.Model
         public string Faculty { get; set; }
         public string Department { get; set; }
         public int Level { get; set; }
-        public string Id { get; set; }
-        public User User { get; set; }
+       /* public User User { get; set; }*/
        
     }
 }

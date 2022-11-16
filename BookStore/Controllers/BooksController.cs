@@ -4,6 +4,7 @@ using Bookstore.Model.DTO.Author;
 using Bookstore.Model.DTO.Book;
 using Bookstore.Service.Interface;
 using Mapster;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System;
@@ -84,10 +85,11 @@ namespace Bookstore.Controllers
             return Ok(mappedBooks);
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpPost]
         public async Task<IActionResult> AddBook([FromForm]BookCreate newBook)
         {
-            string bookLink = await _blob.Upload(newBook.BookLink);
+            string bookLink = await _blob.Upload(newBook.Book);
             string picture = await _blob.Upload(newBook.Picture);
             Book book = newBook.Adapt<Book>();
             book.BookLink = bookLink;
@@ -96,6 +98,7 @@ namespace Bookstore.Controllers
             return Ok("Created Successfully");
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpPut("{bookId}")]
         public async Task<IActionResult> UpdateBook(Guid bookId,[FromForm] BookUpdate updatedBook)
         {
@@ -112,6 +115,8 @@ namespace Bookstore.Controllers
             await _bookDb.UpdateBook(book);
             return Ok("Updated Successfully");
         }
+
+        [Authorize(Roles = "Admin")]
         [HttpDelete("{bookId}")]
         public async Task<IActionResult> DeleteBook(Guid bookId)
         {
